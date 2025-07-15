@@ -12,7 +12,9 @@
 # ------------------------------
 # 1. Set Working Directory
 # ------------------------------
-setwd("~/Documents/Obese_Microbiome/2.Alpha_diversity")
+setwd("~/Documents/Microbiome_Analysis_R/2.Alpha_diversity")
+
+
 
 
 # ------------------------------
@@ -23,6 +25,8 @@ load("~/Documents/Obese_Microbiome/1.Raw_Data/Building_Phyloseq.RData")
 library(phyloseq)
 library(car)
 library(dplyr)
+
+
 
 
 # ------------------------------
