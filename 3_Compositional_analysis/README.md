@@ -1,4 +1,4 @@
-# 🧬 Compositional Profiles (Taxonomic Abundance)
+# 🧬 Compositional Profiles (Microbial Abundance)
 
 This script summarizes microbial taxonomic abundances from a `phyloseq` object (`ps`) at multiple taxonomic ranks and exports both:
 
