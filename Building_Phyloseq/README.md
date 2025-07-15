@@ -25,7 +25,7 @@ Install dependencies by running the first section of the script. Packages includ
 - `ape`
 - `readxl`
 - `dplyr`
-
+- `tibble`
 ---
 
 ## 🚀 Running the Script
