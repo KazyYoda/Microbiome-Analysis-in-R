@@ -99,7 +99,7 @@ stat_taxonomic_level <- function(level_name, prefix, input_file) {
       geom_jitter(width = 0.2, size = 0.7, alpha = 0.6) +
       facet_wrap(~ Taxa, scales = "free_y") +
       scale_fill_manual(values = c("N" = "grey", "OW" = "#FFA500", "OB" = "darkred")) +
-      labs(title = paste("Differential Abundance -", level_name),
+      labs(title = paste("Significant difference in abundance -", level_name),
            y = "Relative Abundance", x = "Group") +
       theme_bw() +
       theme(strip.text = element_text(face = "bold.italic", size = 8),
@@ -131,22 +131,72 @@ for (i in seq_along(levels)) {
 }
 
                
-# ---- Heatmap Visualization ----
+# ---- Heatmap Visualization of Significant Genus-Level Abundance ----
 library(ComplexHeatmap)
 library(circlize)
-group_colors <- c(N = "grey", OW = "#FFA500", OB = "darkred")
-Rel_Genus_sig <- asv_genus_with_metadata_rel %>% select(SampleID, Group, all_of(sig_taxa))
-Rel_Genus_sig_data <- Rel_Genus_sig %>% select(-SampleID, -Group) %>% as.matrix()
+
+
+# ---- Step 1: Load Data ----
+# Relative abundance table at Genus level
+Genus <- read_excel("5_Rel_Genus.xlsx")
+
+    
+# List of significantly different genera from Dunn's post hoc test
+sig_taxa <- read.delim("5_dunn_sig_Genus.txt")
+
+    
+# ---- Step 2: Subset Data for Significant Genera ----
+Rel_Genus_sig <- Genus %>%
+  select(SampleID, Group, all_of(sig_taxa$Taxa))  # Keep only significant taxa
+
+    
+# Create a matrix for heatmap (Taxa as rows, Samples as columns)
+Rel_Genus_sig_data <- Rel_Genus_sig %>%
+  select(-SampleID, -Group) %>%
+  as.matrix()
+
+# Transpose the matrix (rows: taxa, columns: samples)
 Rel_Genus_sig_data_t <- t(Rel_Genus_sig_data)
 colnames(Rel_Genus_sig_data_t) <- Rel_Genus_sig$SampleID
+
+    
+# ---- Step 3: Prepare Group Annotation ----
+group_colors <- c(N = "grey", OW = "#FFA500", OB = "darkred")
+
+    
+# Match group info by sample
 sample_group <- data.frame(Group = sample_metadata$Group)
 rownames(sample_group) <- sample_metadata$SampleID
+
+    
+# Annotation for sample groups
 ha <- HeatmapAnnotation(df = sample_group, col = list(Group = group_colors))
-col_fun <- colorRamp2(c(min(Rel_Genus_sig_data_t), mean(Rel_Genus_sig_data_t), max(Rel_Genus_sig_data_t)),
-                      c("#89ABE3", "#FDFD96", "#FC766A"))
-Heatmap(Rel_Genus_sig_data_t, name = "Relative abundance", top_annotation = ha,
-        col = col_fun, border = TRUE, cluster_rows = TRUE, cluster_columns = TRUE,
-        column_split = sample_group$Group,
-        row_names_gp = gpar(fontsize = 8, fontface = "italic"),
-        column_names_gp = gpar(fontsize = 6),
-        heatmap_legend_param = list(direction = "vertical"))
+
+    
+# ---- Step 4: Define Heatmap Color Scale ----
+col_fun <- colorRamp2(
+  c(min(Rel_Genus_sig_data_t), 
+    mean(Rel_Genus_sig_data_t), 
+    max(Rel_Genus_sig_data_t)),
+  c("#89ABE3", "#FDFD96", "#FC766A")
+)
+
+    
+# ---- Step 5: Generate Heatmap ----
+Heatmap(
+  Rel_Genus_sig_data_t,
+  name = "Relative abundance",
+  cluster_rows = TRUE,
+  cluster_columns = TRUE,
+  col = col_fun,
+  top_annotation = ha,
+  column_split = sample_group$Group,  # Split samples by group
+  border = TRUE,
+  border_gp = gpar(col = "grey"),
+  rect_gp = gpar(col = "grey30", lwd = 0.5),
+  column_names_gp = gpar(fontsize = 6),
+  row_names_gp = gpar(fontsize = 8, fontface = "italic"),
+  clustering_distance_rows = "spearman",
+  clustering_distance_columns = "spearman",
+  heatmap_legend_param = list(direction = "vertical")
+)
