@@ -137,7 +137,7 @@ library(circlize)
 
 
 # ---- Step 1: Load Data ----
-# Relative abundance table at Genus level
+# Relative abundance table at Genus level (please check your directory)
 Genus <- read_excel("5_Rel_Genus.xlsx")
 
     
@@ -200,3 +200,109 @@ Heatmap(
   clustering_distance_columns = "spearman",
   heatmap_legend_param = list(direction = "vertical")
 )
+
+
+    
+
+# ---------------------------------------------------------------
+# Stacked Barplot of Microbial Relative Abundance 
+# ---------------------------------------------------------------
+
+# Define custom color palette (at least as many as your top taxa)
+custom_colors <- c(
+  "#082a54",  # Dark Blue
+  "#e02b35",  # Red
+  "#f0c571",  # Gold
+  "#59a89c",  # Teal
+  "#a559aa",  # Purple
+  "#3f4c6b",  # Dark Blue variant
+  "#d92e2f",  # Deep Red
+  "#f2b94f",  # Bright Gold
+  "#5c8f8f",  # Teal variant
+  "#9c4a9d",  # Purple variant
+  "#4b8fbe",  # Steel Blue
+  "#d66f51",  # Salmon Red
+  "#ffb643",  # Lemon Yellow
+  "#72b7b1",  # Pastel Teal
+  "#b15598",  # Lavender Purple
+  "#2c3e6b",  # Navy Blue
+  "#e64d58",  # Coral Red
+  "#d9c258",  # Soft Gold
+  "#61b9a4",  # Mint Teal
+  "#aa478c",  # Plum Purple
+  "#1f2d49",  # Deep Navy
+  "#fd7c4d",  # Tangerine Red
+  "#fcd703",  # Vibrant Yellow
+  "#72b5b7",  # Ocean Teal
+  "#8a5398",  # Magenta Purple
+  "#cecece"   # Gray (last color)
+)
+
+  
+# Custom theme
+theme_stack <- theme_bw() +
+  theme(
+    panel.grid = element_blank(),
+    panel.border = element_rect(colour = "black", fill = NA),
+    axis.text = element_text(size = 8),
+    axis.title = element_text(size = 10),
+    strip.text = element_text(face = "bold"),
+    legend.title = element_text(size = 9),
+    legend.text = element_text(size = 8),
+    legend.position = "right",
+    legend.key.size = unit(0.5, "cm")
+  )
+
+    
+# ---- Helper Function for Plotting ----
+plot_stacked_bar <- function(data, group_order, top_n = 10, level = "Phylum") {
+  
+  data$Group <- factor(data$Group, levels = group_order)
+
+  # Step 1: Compute top N taxa by overall mean
+  top_taxa <- colnames(data)[3:(2 + top_n)]
+
+  # Step 2: Melt data to long format and collapse others
+  data_long <- melt(data, id.vars = c("SampleID", "Group"),
+                    variable.name = "Taxa", value.name = "Abundance") %>%
+    mutate(Taxa = ifelse(as.character(Taxa) %in% top_taxa, as.character(Taxa), "Others")) 
+
+  # Step 3: Compute mean abundance by group and taxa
+  mean_abundance <- data_long %>%
+    group_by(Group, Taxa) %>%
+    summarise(MeanAbundance = mean(Abundance), .groups = "drop")
+
+  # Taxa in reverse order 
+  order_taxa <- c("Others", rev(top_taxa))
+  
+  # Step 4: Plot
+  p <- ggplot(mean_abundance, aes(x = Group, y = MeanAbundance, 
+                                  fill = factor(Taxa, level = order_taxa))) +
+    geom_bar(stat = "identity", position = "fill") +
+    #scale_y_continuous(labels = function(x) paste0(round(x * 100), "%")) +  # manual percent formatting
+    scale_fill_manual(values = custom_colors) +
+    labs(x = "", y = "Relative Abundance", fill = level) +
+    theme_stack
+
+  return(p)
+}
+
+    
+# ---------------------------------------------------------------
+# Example Usage:
+# ---------------------------------------------------------------
+
+# --- Phylum level ---                   
+Rel_Phylum <- read_excel("1_Rel_Phylum.xlsx") # please check your directory
+phylum_plot <- plot_stacked_bar(data = Rel_Phylum, 
+                                group_order = c("N", "OW", "OB"), 
+                                top_n = 10, level = "Phylum")
+print(phylum_plot)
+
+                       
+# --- Class level ---
+Rel_Class <- read_excel("2_Rel_Class.xlsx") # please check your directory
+class_plot <- plot_stacked_bar(data = Rel_Class, 
+                                group_order = c("N", "OW", "OB"), 
+                                top_n = 10, level = "Class")
+print(class_plot)
