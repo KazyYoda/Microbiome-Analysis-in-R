@@ -1,6 +1,6 @@
 ############################################################
 # Microbiome Analysis in R: Building a Phyloseq Object
-# Author: Lucsame Gruneck (Lucky)
+# Author: Lucky
 # Date: [2025-07]
 # Description:
 #   This script loads ASV count data, taxonomy, metadata,
