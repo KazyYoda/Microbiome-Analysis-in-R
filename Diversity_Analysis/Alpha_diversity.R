@@ -17,11 +17,13 @@ setwd("~/Documents/Microbiome_Analysis_R/2.Alpha_diversity")
 
 
 
-# ------------------------------
+# -----------------------------------
 # 2. Load Phyloseq Object & Packages
-# ------------------------------
-load("~/Documents/Obese_Microbiome/1.Raw_Data/Building_Phyloseq.RData")
+# -----------------------------------
+load("~/Documents/Microbiome_Analysis_R/1.Raw_Data/Building_Phyloseq.RData")
 
+
+# Load packages
 library(phyloseq)
 library(car)
 library(dplyr)
@@ -46,24 +48,31 @@ alpha_div_meta <- cbind(meta, alpha_div)
 head(alpha_div_meta)
 
 
-# ------------------------------
+
+
+# -------------------------------------------------
 # 4. Calculate Faith’s Phylogenetic Diversity (PD)
-# ------------------------------
+# -------------------------------------------------
 install.packages("picante")  # If not already installed
 library(picante)
+
 
 # Extract OTU table and tree from phyloseq
 otu <- as(otu_table(ps), "matrix")
 tree <- phy_tree(ps)
 tree$tip.label <- as.character(tree$tip.label)
 
+
 # Align OTU table rows with tree tip labels
 otu <- otu[tree$tip.label, ]
 otu_t <- t(otu)  # Transpose so rows = samples, columns = ASVs
+head(otu_t)
+
 
 # Compute PD
 pd_result <- pd(otu_t, tree)
 pd_result$SampleID <- rownames(pd_result)
+
 
 # Merge PD with alpha diversity table
 alpha_div_meta_combined <- merge(alpha_div_meta,
@@ -72,13 +81,16 @@ alpha_div_meta_combined <- merge(alpha_div_meta,
 
 head(alpha_div_meta_combined)
 
+
 # Export to file
 Export(alpha_div_meta_combined, "Alpha_diversity.txt")
 
 
-# ------------------------------
+
+
+# ----------------------------------------
 # 5. Statistical Testing (Kruskal-Wallis)
-# ------------------------------
+# ----------------------------------------
 
 # Clean input: remove standard error of Chao1
 alpha_df <- alpha_div_meta_combined %>% select(-se.chao1)
@@ -88,7 +100,11 @@ alpha_metrics <- c("Observed", "Chao1", "Shannon", "PD")
 kruskal_results <- lapply(alpha_metrics, function(metric) {
   kruskal.test(as.formula(paste(metric, "~ Group")), data = alpha_df)
 })
+
+
+# Name the results so you know which is which
 names(kruskal_results) <- alpha_metrics
+
 
 # Extract p-values
 kruskal_summary <- data.frame(
@@ -98,6 +114,8 @@ kruskal_summary <- data.frame(
 
 print(kruskal_summary)
 Export(kruskal_summary, "kruskal_pval.txt")
+
+
 
 
 # ------------------------------
