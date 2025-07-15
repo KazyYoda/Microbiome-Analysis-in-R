@@ -1,93 +1,59 @@
-################################################
-# "Microbiome Analysis: Building Phyloseq in R #
-################################################
+############################################################
+# Microbiome Analysis in R: Building a Phyloseq Object
+# Author: Lucsame Gruneck (Lucky)
+# Date: [2025-07]
+# Description:
+#   This script loads ASV count data, taxonomy, metadata,
+#   and a phylogenetic tree to build a Phyloseq object.
+#   For QIIME2 outputs processed for use in R.
+############################################################
 
 
-#--------------------------------
-# 1. Loading Required Packages
-#--------------------------------
+# ------------------------------
+# 1. Install & Load Packages
+# ------------------------------
 
-## Install Bioconductor manager if it's not installed
+# Install Bioconductor manager if not already installed
 if (!requireNamespace("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
 
-BiocManager::install("phyloseq")
 
-## Install biomformat from Bioconductor
+# Install Bioconductor packages
+BiocManager::install("phyloseq")
 BiocManager::install("biomformat") # to read and manipulate BIOM files.
 
-## Install other packages:
-install.packages("ape") # Analyses of Phylogenetics and Evolution
-install.packages("dplyr") # Data manipulation
-install.packages("readxl") # Read Excel Files
+
+# Install CRAN packages
+install.packages(c("ape", "dplyr", "readxl", "tibble"))
 
 
-
-
-#--------------------------------
-# 2. Importing Input Files
-#--------------------------------
-
-# import input files:
-# •	ASV/OTU Table
-# •	Taxonomy Table
-# •	Sample Metadata
-# •	Phylogenetic Tree
-
-
-## Prepare each datasetset for use in building the phyloseq object
-# Set a working directory:
-setwd("~/Documents/Microbiome_Analysis_R/1.Raw_Data")
-
-
-# Load packages:
+# Load packages
 library(phyloseq)
 library(ape)
 library(readxl)
 library(dplyr)
-
-# New Metadata
-BMI_zscore <- final_bmi_for_age %>%
-  select(Sample, final_z.indv, BMI_for_age) %>%
-  rename("BMI_zscore" = "final_z.indv",
-         "Group" = "BMI_for_age")
-
-BMI_zscore$Group[BMI_zscore$Group == "Thinness"] <- "N"
-BMI_zscore$Group[BMI_zscore$Group == "Normal"] <- "N"
-BMI_zscore$Group[BMI_zscore$Group == "OV"] <- "OW"
+library(tibble)
 
 
-# Relabel incorrect BMI groups for sample id BH299 & BH325 in metadata
-metadata$Group1[metadata$sampleid == "BH299"] <- "N"
-metadata$Group1[metadata$sampleid == "BH325"] <- "OB"
 
-# Match BMI_zscore to Metadata
-Metadata_BMIzscore <- metadata %>%
-  left_join(BMI_zscore, by = c("sampleid" = "Sample",
-                               "Group1" = "Group")) %>%
-  rename("Group" = "Group1") %>%
-  select(-Group2)
+# ------------------------------
+# 2. Import Input Files
+# ------------------------------
 
+# Set working directory
+setwd("~/Documents/Microbiome_Analysis_R/1.Raw_Data")
 
-Metadata_new <- Metadata_BMIzscore %>%
-  select(sampleid, Group)
-
-Export(Metadata_new, "Metadata_new.txt")
-
-
-# Open feature-table.tsv with Excel and remove the first row "Constructed from biom file"
-# Then, save it as .xlsx file and import in R
-# File paths
-asv_table_file <- "feature-table.xlsx"
-taxonomy_file <- "taxonomy.tsv"
-metadata_file <- Metadata_new
-tree_file <- "tree.nwk"
+# Define input file paths
+asv_table_file <- "feature-table.xlsx"    # ASV/OTU count table
+taxonomy_file  <- "taxonomy.tsv"          # Taxonomy table
+metadata_file  <- "Metadata.txt"          # Sample metadata
+tree_file      <- "tree.nwk"              # Rooted phylogenetic tree
 
 # Load data
-feature_table <- read_excel("feature-table.xlsx")
-tax_table_raw <- read.delim("taxonomy.tsv", sep = "\t", header = TRUE)
-metadata <- metadata_file
-phy_tree <- read_tree(tree_file)  # if using phylogenetic tree
+feature_table   <- read_excel(asv_table_file)
+tax_table_raw   <- read.delim(taxonomy_file, sep = "\t", header = TRUE)
+metadata        <- read.delim(metadata_file)
+phy_tree_object <- read_tree(tree_file)
 
 
 # Exploring data
