@@ -81,3 +81,108 @@ This script summarizes microbial taxonomic abundances from a `phyloseq` object (
 - Ensure `SampleID` is consistent and unique in `sample_data()` to avoid merge issues.
 
 ---
+
+
+
+# 📊 Differential Abundance Analysis Across BMI Groups
+
+This section analyzes differences in microbial abundance across BMI groups (Normal weight, Overweight, Obese) at various taxonomic ranks using non-parametric statistical tests.
+
+---
+
+## 📂 Input
+
+- Relative abundance tables with metadata (`*_with_metadata_rel`)
+- Sample metadata (`sample_metadata`) with `SampleID` and BMI group labeled as `Group` (factor: N, OW, OB)
+
+---
+
+
+## 🔍 Analysis Workflow
+
+### 🔹 Step 1: Data Preparation
+
+- Extract taxon abundance (excluding `SampleID`, `Group`) for each rank.
+- Ensure `Group` is set as a factor with levels: `N`, `OW`, `OB`.
+
+### 🔹 Step 2: Kruskal-Wallis Test
+
+- Non-parametric test (`kruskal.test`) used to detect significant differences in abundance across BMI groups.
+- Significant taxa (p < 0.05) are extracted for further testing.
+- Results are exported as:
+
+| File Name                | Description                       |
+|-------------------------|-----------------------------------|
+| `1_krus_phylum_pval.txt`| Kruskal p-values (Phylum level)   |
+| `2_krus_class_pval.txt` | Kruskal p-values (Class level)    |
+| `3_krus_order_pval.txt` | Kruskal p-values (Order level)    |
+| `4_krus_family_pval.txt`| Kruskal p-values (Family level)   |
+| `5_krus_genus_pval.txt` | Kruskal p-values (Genus level)    |
+
+### 🔹 Step 3: Dunn’s Post Hoc Test
+
+- For taxa with significant Kruskal results, Dunn’s post hoc tests are performed with BH (Benjamini-Hochberg) correction.
+- Significant pairwise comparisons are retained (adjusted p < 0.05).
+- Output files:
+
+| File Name                | Description                           |
+|-------------------------|---------------------------------------|
+| `1_dunn_sig_phylum.txt` | Significant comparisons (Phylum)      |
+| `2_dunn_sig_class.txt`  | Significant comparisons (Class)       |
+| `3_dunn_sig_order.txt`  | Significant comparisons (Order)       |
+| `4_dunn_sig_family.txt` | Significant comparisons (Family)      |
+| `5_dunn_sig_genus.txt`  | Significant comparisons (Genus)       |
+
+---
+
+## 📈 Visualization
+
+### 🔹 Boxplots of Significant Taxa (Genus level)
+
+- Boxplots show relative abundance per BMI group for each significant genus.
+- Includes individual points (jittered) and faceted layout for each taxon.
+- Custom color palette used:
+  - **N**: Grey
+  - **OW**: Orange (`#FFA500`)
+  - **OB**: Dark Red
+
+### 🔹 Heatmap of Significant Genera
+
+- Visualizes significant genera across samples.
+- Heatmap rows: genera; columns: samples (colored by Group).
+- Spearman distance used for clustering.
+- Color scale:
+  - Blue → Yellow → Red
+
+---
+
+## 📊 Stacked Barplots
+
+### 🔹 Phylum-Level Barplot
+
+- Relative abundance (mean per group) shown for top 11 phyla.
+- Custom palette used for clearer distinction.
+
+### 🔹 Class-Level Barplot
+
+- Displays top 10 most abundant classes + "Others".
+- Computed relative abundance row-wise and reshaped for plotting.
+- Colors match those in the Phylum plot for consistency.
+
+---
+
+## 📌 Notes
+
+- NA or missing taxa are excluded from boxplots.
+- Significant results are based on adjusted p-values.
+- Metadata must include `SampleID` and correctly labeled `Group`.
+
+---
+
+## 🧪 Tools Used
+
+- `dplyr`, `FSA`, `ggplot2`, `ggpubr`, `ComplexHeatmap`, `reshape2`
+- Kruskal-Wallis and Dunn's Test (non-parametric stats)
+- `phyloseq`-generated abundance tables
+
+---
