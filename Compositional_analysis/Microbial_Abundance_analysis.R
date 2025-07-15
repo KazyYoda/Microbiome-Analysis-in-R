@@ -83,32 +83,35 @@ stat_taxonomic_level <- function(level_name, prefix, input_file) {
   # Export Dunn results 
   Export(dunn_sig, paste0(prefix, "_dunn_sig_", level_name, ".txt"))
 
-  # ---- Step 4: Boxplot for Significant Taxa ----
-  abundance_long <- melt(taxa_raw, id.vars = c("SampleID", "Group"),
-                         variable.name = "Taxa", value.name = "Abundance")
+  # ---- Step 4: Conditional Boxplot ----
+  if (level_name != "Genus") {
+    abundance_long <- melt(taxa_raw, id.vars = c("SampleID", "Group"),
+                           variable.name = "Taxa", value.name = "Abundance")
 
-  sig_taxa <- unique(dunn_sig$Taxa)
+    sig_taxa <- unique(dunn_sig$Taxa)
 
-  abundance_sig <- abundance_long %>%
-    filter(Taxa %in% sig_taxa, Taxa != "unclassified") %>%
-    mutate(Group = factor(Group, levels = c("N", "OW", "OB")))
+    abundance_sig <- abundance_long %>%
+      filter(Taxa %in% sig_taxa, Taxa != "unclassified") %>%
+      mutate(Group = factor(Group, levels = c("N", "OW", "OB")))
 
-  # Plot boxplots for significant taxa
-  p <- ggplot(abundance_sig, aes(x = Group, y = Abundance, fill = Group)) +
-    geom_boxplot(outlier.shape = NA, alpha = 0.7) +
-    geom_jitter(width = 0.2, size = 0.7, alpha = 0.6) +
-    facet_wrap(~ Taxa, scales = "free_y") +
-    scale_fill_manual(values = c("N" = "grey", "OW" = "#FFA500", "OB" = "darkred")) +
-    labs(title = paste("Differential Abundance -", level_name),
-         y = "Relative Abundance", x = "Group") +
-    theme_bw() +
-    theme(strip.text = element_text(face = "bold.italic", size = 9),
-          legend.position = "none",
-          axis.text = element_text(size = 9),
-          axis.title = element_text(size = 9),
-          panel.grid = element_blank())
-    
+    p <- ggplot(abundance_sig, aes(x = Group, y = Abundance, fill = Group)) +
+      geom_boxplot(outlier.shape = NA, alpha = 0.7) +
+      geom_jitter(width = 0.2, size = 0.7, alpha = 0.6) +
+      facet_wrap(~ Taxa, scales = "free_y") +
+      scale_fill_manual(values = c("N" = "grey", "OW" = "#FFA500", "OB" = "darkred")) +
+      labs(title = paste("Differential Abundance -", level_name),
+           y = "Relative Abundance", x = "Group") +
+      theme_bw() +
+      theme(strip.text = element_text(face = "bold.italic", size = 8),
+            legend.position = "none",
+            axis.text = element_text(size = 9),
+            axis.title = element_text(size = 9),
+            panel.grid = element_blank())
+
     print(p)
+  } else {
+    message("⏭️ Skipping boxplot for Genus level.")
+  }
 }
 
 
