@@ -70,7 +70,13 @@ It includes:
 - Group comparison using **PERMANOVA**  
 - **Beta dispersion** testing to check homogeneity of variance
 
+
+### 📁 Input
+
+- `Building_Phyloseq.RData`: Phyloseq object containing OTU table, taxonomy, metadata, and tree
+- Loaded from `1.Raw_Data/` directory
 ---
+
 
 ## 📊 Interpreting Beta Dispersion
 
