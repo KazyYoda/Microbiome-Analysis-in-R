@@ -160,14 +160,13 @@ This section analyzes differences in microbial abundance across BMI groups (Norm
 
 ### 🔹 Phylum-Level Barplot
 
-- Relative abundance (mean per group) shown for top 11 phyla.
+- Displays top 10 most abundant Phylum + "Others".
 - Custom palette used for clearer distinction.
 
 ### 🔹 Class-Level Barplot
 
 - Displays top 10 most abundant classes + "Others".
-- Computed relative abundance row-wise and reshaped for plotting.
-- Colors match those in the Phylum plot for consistency.
+- Custom palette used for clearer distinction.
 
 ---
 
