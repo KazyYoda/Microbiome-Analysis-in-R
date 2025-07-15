@@ -10,65 +10,124 @@
 ##########################################################################
 
 
-# ------------------------------
-# 1. Set Working Directory
-# ------------------------------
+# ----------------------------------------
+# 1. Set Working Directory & Load .RData
+# ----------------------------------------
 
-setwd("~/Documents/Microbiome_Analysis_R/4.Compositional_Profiles/Stat")
+setwd("~/Documents/Microbiome_Analysis_R/4.Compositional_Profiles")
+load("~/Documents/Microbiome_Analysis_R/4.Compositional_Profiles/Compositional_Profiles.RData")
 
-# ---- Load and Prepare Data ----
-taxa <- asv_genus_with_metadata_rel %>% select(-SampleID, -Group)  # example; repeat for each level
-sample_metadata$Group <- factor(sample_metadata$Group, levels = c("N", "OW", "OB"))
 
-# ---- Kruskal-Wallis Test ----
-krus <- lapply(taxa, function(x) kruskal.test(x ~ Group, data = sample_metadata))
-krus_pvalue <- data.frame(
-  Taxa = colnames(taxa),
-  p.value = sapply(krus, getElement, name = "p.value")
-) %>% mutate_if(is.numeric, round, digit = 6)
-Export(krus_pvalue, "5_krus_genus_pval.txt")
-
-# ---- Dunn’s Post Hoc Test ----
+# Load packages
+library(readxl)
+library(dplyr)
 library(FSA)
-krus_sig_groups <- krus_pvalue %>% filter(p.value < 0.05)
-dunn_test <- setNames(
-  lapply(krus_sig_groups$Taxa, function(group) {
-    dunn_res <- dunnTest(taxa[[group]] ~ Group, data = sample_metadata, method = "bh")
-    as.data.frame(dunn_res$res)
-  }),
-  krus_sig_groups$Taxa
-)
-dunn_sig <- do.call(rbind, lapply(names(dunn_test), function(Taxa) {
-  df <- dunn_test[[Taxa]]
-  df$Taxa <- Taxa
-  df[df$P.adj < 0.05, ]
-}))
-dunn_sig_bac <- data.frame(dunn_sig, row.names = NULL)
-Export(dunn_sig_bac, "5_dunn_sig_genus.txt")
-
-# ---- Boxplot Visualization ----
 library(reshape2)
 library(ggpubr)
-abundance_long <- melt(asv_genus_with_metadata_rel, id.vars = c("SampleID", "Group"),
-                       variable.name = "Taxa", value.name = "Abundance")
-sig_taxa <- unique(dunn_sig_bac$Taxa)
-abundance_sig <- abundance_long %>%
-  filter(Taxa %in% sig_taxa, Taxa != "unclassified") %>%
+library(rio)
+library(car)
+
+
+
+
+# ---------------------------------------------------------------
+# 2. Abundance Analysis and Visualization by Taxonomic Rank
+# ---------------------------------------------------------------
+
+# Set working directory
+setwd("~/Documents/Obese_Microbiome/4.Compositional_Profiles/Stat")
+
+
+# Use sample metadata from "Compositional_Profiles.RData"
+sample_metadata <- sample_metadata %>%
   mutate(Group = factor(Group, levels = c("N", "OW", "OB")))
 
-ggplot(abundance_sig, aes(x = Group, y = Abundance, fill = Group)) +
-  geom_boxplot(outlier.shape = NA, alpha = 0.7) +
-  geom_jitter(width = 0.2, size = 0.7, alpha = 0.6) +
-  facet_wrap(~ Taxa, scales = "free_y") +
-  scale_fill_manual(values = c("N" = "grey", "OW" = "#FFA500", "OB" = "darkred")) +
-  labs(y = "Relative Abundance", x = "Group") +
-  theme_bw() +
-  theme(strip.text = element_text(face = "bold.italic", size = 9),
-        legend.position = "none",
-        axis.text = element_text(size = 12),
-        axis.title = element_text(size = 12),
-        panel.grid = element_blank())
 
+# Helper function for statistical analysis and visualization
+stat_taxonomic_level <- function(level_name, prefix, input_file) {
+  message("▶️ Processing: ", level_name)
+
+  # ---- Step 1: Load and Prepare Data ----
+  taxa_raw <- read_excel(input_file)
+  taxa <- taxa_raw %>% select(-SampleID, -Group)
+
+  # ---- Step 2: Kruskal-Wallis Test ----
+  krus <- lapply(taxa, function(x) kruskal.test(x ~ sample_metadata$Group))
+  krus_pvalue <- data.frame(
+    Taxa = colnames(taxa),
+    p.value = sapply(krus, function(x) x$p.value)
+  ) %>%
+    mutate(p.value = round(p.value, 6))
+
+  # Export p-values 
+  Export(krus_pvalue, paste0(prefix, "_krus_", level_name, "_pval.txt"))
+
+  # ---- Step 3: Dunn’s Post Hoc Test (BH adjusted) ----
+  krus_sig <- krus_pvalue %>% filter(p.value < 0.05)
+
+  dunn_test <- setNames(
+    lapply(krus_sig$Taxa, function(taxa_name) {
+      dunn_res <- dunnTest(taxa[[taxa_name]] ~ sample_metadata$Group, method = "bh")
+      df <- as.data.frame(dunn_res$res) # Convert results to dataframe
+      df$Taxa <- taxa_name
+      df
+    }),
+    krus_sig$Taxa # Assign names based on taxa
+  )
+
+   # Filter significant pairs (adjusted p-value < 0.05)
+  dunn_sig <- bind_rows(
+    lapply(dunn_test, function(df) df %>% filter(P.adj < 0.05))
+  )
+
+  # Export Dunn results 
+  Export(dunn_sig, paste0(prefix, "_dunn_sig_", level_name, ".txt"))
+
+  # ---- Step 4: Boxplot for Significant Taxa ----
+  abundance_long <- melt(taxa_raw, id.vars = c("SampleID", "Group"),
+                         variable.name = "Taxa", value.name = "Abundance")
+
+  sig_taxa <- unique(dunn_sig$Taxa)
+
+  abundance_sig <- abundance_long %>%
+    filter(Taxa %in% sig_taxa, Taxa != "unclassified") %>%
+    mutate(Group = factor(Group, levels = c("N", "OW", "OB")))
+
+  # Plot boxplots for significant taxa
+  p <- ggplot(abundance_sig, aes(x = Group, y = Abundance, fill = Group)) +
+    geom_boxplot(outlier.shape = NA, alpha = 0.7) +
+    geom_jitter(width = 0.2, size = 0.7, alpha = 0.6) +
+    facet_wrap(~ Taxa, scales = "free_y") +
+    scale_fill_manual(values = c("N" = "grey", "OW" = "#FFA500", "OB" = "darkred")) +
+    labs(title = paste("Differential Abundance -", level_name),
+         y = "Relative Abundance", x = "Group") +
+    theme_bw() +
+    theme(strip.text = element_text(face = "bold.italic", size = 9),
+          legend.position = "none",
+          axis.text = element_text(size = 9),
+          axis.title = element_text(size = 9),
+          panel.grid = element_blank())
+    
+    print(p)
+}
+
+
+# -----------------------------
+# Run for all taxonomic levels
+# -----------------------------
+levels <- c("Phylum", "Class", "Order", "Family", "Genus")
+prefixes <- c("1", "2", "3", "4", "5")
+input_files <- c("1_Rel_Phylum.xlsx", "2_Rel_Class.xlsx", "3_Rel_Order.xlsx",
+                 "4_Rel_Family.xlsx", "5_Rel_Genus.xlsx")
+
+# Loop through levels
+for (i in seq_along(levels)) {
+  stat_taxonomic_level(level_name = levels[i],
+                       prefix = prefixes[i],
+                       input_file = input_files[i])
+}
+
+               
 # ---- Heatmap Visualization ----
 library(ComplexHeatmap)
 library(circlize)
