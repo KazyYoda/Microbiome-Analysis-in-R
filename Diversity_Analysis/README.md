@@ -53,3 +53,51 @@ Install the following before running:
 
 ```r
 install.packages(c("car", "picante", "ggplot2", "tidyr", "dplyr", "rio"))
+```
+
+
+# 🧪 Beta Diversity Analysis in Microbiome Studies
+
+This analysis investigates **beta diversity** among microbial communities using:
+
+- **Unweighted UniFrac**
+- **Weighted UniFrac**
+- **Bray-Curtis**
+
+It includes:
+
+- Ordination via **PCoA**  
+- Group comparison using **PERMANOVA**  
+- **Beta dispersion** testing to check homogeneity of variance
+
+---
+
+## 📊 Interpreting Beta Dispersion
+
+**Why it matters:**  
+PERMANOVA assumes that group variances (dispersions) are similar. To test this, use `betadisper()`.
+
+- ✅ **p > 0.05** → Group dispersions are **homogeneous** → PERMANOVA results are **reliable**
+- ⚠️ **p < 0.05** → Group dispersions are **significantly different** → Interpret PERMANOVA with **caution**
+
+---
+
+## 📦 Required R Packages
+
+Make sure the following packages are installed:
+
+```r
+# CRAN packages
+install.packages(c("vegan", "ggplot2", "picante", "gridExtra"))
+
+# Bioconductor package
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install("phyloseq")
+
+# GitHub package
+if (!requireNamespace("devtools", quietly = TRUE))
+  install.packages("devtools")
+devtools::install_github("pmartinezarbizu/pairwiseAdonis/pairwiseAdonis")
+```
+
