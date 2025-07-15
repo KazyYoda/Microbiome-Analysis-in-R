@@ -15,7 +15,7 @@
 # 1. Set Working Directory
 # ------------------------------
 
-setwd("~/Documents/Obese_Microbiome/4.Compositional_Profiles")
+setwd("~/Documents/Microbiome_Analysis_R/4.Compositional_Profiles")
 
 
 
@@ -30,6 +30,7 @@ load("~/Documents/Obese_Microbiome/1.Raw_Data/Building_Phyloseq.RData")
 library(phyloseq)
 library(dplyr)
 library(ggplot2)
+library(rio)
 library(car)  
 
 
@@ -49,7 +50,18 @@ sample_metadata <- as(sample_data(ps), "data.frame")
 asv_count_table$TotalCounts <- rowSums(asv_count_table)
 asv_taxonomy_table_sorted <- asv_count_table[order(-asv_count_table$TotalCounts), ]
 rownames(asv_taxonomy_table_sorted) <- NULL
+head(asv_taxonomy_table_sorted)
 Export(asv_taxonomy_table_sorted, "asv_taxonomy_table_sorted.xlsx")
+
+
+# Named prefix mapping for each taxonomic level
+prefix_map <- c(
+  Phylum = "p__",
+  Class = "c__",
+  Order = "o__",
+  Family = "f__",
+  Genus = "g__"
+)
 
 
 # Helper function: summarize and export by taxonomic level
@@ -80,9 +92,9 @@ process_taxonomic_level <- function(level, prefix) {
   tax_with_metadata <- sample_metadata %>%
     left_join(tax_table_t, by = "SampleID")
 
-  # Remove prefix (e.g., "p__")
-  prefix_pattern <- paste0("^", substr(level, 1, 1), "__")
-  colnames(tax_with_metadata) <- gsub(prefix_pattern, "", colnames(tax_with_metadata))
+  # Remove known taxonomic prefix (if present)
+  prefix_to_remove <- prefix_map[[level]]
+  colnames(tax_with_metadata) <- gsub(paste0("^", prefix_to_remove), "", colnames(tax_with_metadata))
 
   # Export absolute counts
   Export(tax_with_metadata, paste0(prefix, "_Counts_", level, ".xlsx"), row.names = FALSE)
