@@ -38,6 +38,7 @@ library(car)
 
 
 
+
 # ------------------------------
 # 2. Import Input Files
 # ------------------------------
@@ -179,7 +180,6 @@ table(is.na(tax_table(ps)))
 
 
 
-
 # ------------------------------
 # 7. Summarize Taxonomy Table
 # ------------------------------
@@ -192,11 +192,12 @@ summary_table <- data.frame(
   Rank = colnames(taxa_df),
   Unique_Taxa = sapply(taxa_df, function(x) length(unique(na.omit(x))))
 )
-
   
 # View summary
 print(summary_table)
 
+
+  
 
 # ------------------------------
 # 8. Export Taxonomy Tables
