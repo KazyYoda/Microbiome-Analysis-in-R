@@ -9,10 +9,10 @@ Place the following files in the `1.Raw_Data/` directory:
 
 | File | Description |
 |------|-------------|
-| `feature-table.xlsx` | ASV/OTU table with samples in columns and ASVs in rows. 💡 If starting from feature-table.tsv exported from a BIOM file, open it in Excel, delete the first row (“Constructed from BIOM file”), and save it as feature-table.xlsx.|
-| `taxonomy.tsv` | Taxonomic classifications (usually from QIIME 2 or similar). |
+| `feature-table.xlsx` | ASV/OTU table (from QIIME 2) with samples in columns and ASVs in rows. 💡 If starting from feature-table.tsv exported from a BIOM file, open it in Excel, delete the first row (“Constructed from BIOM file”), and save it as feature-table.xlsx.|
+| `taxonomy.tsv` | Taxonomic classifications (from QIIME 2). |
 | `Metadata.txt` | Sample metadata file (e.g., sample ID, group, treatment). |
-| `tree.nwk` | Rooted phylogenetic tree file in Newick format (optional but recommended). |
+| `tree.nwk` | Rooted phylogenetic tree file (from QIIME 2) in Newick format (.nwk). |
 
 ---
 
@@ -26,6 +26,8 @@ Install dependencies by running the first section of the script. Packages includ
 - `readxl`
 - `dplyr`
 - `tibble`
+- `rio`
+- `car`
 ---
 
 ## 🚀 Running the Script
