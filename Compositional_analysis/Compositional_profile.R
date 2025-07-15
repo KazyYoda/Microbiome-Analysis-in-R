@@ -11,14 +11,46 @@
 ####################################################################
 
 
-# Load workspace and packages
+# ------------------------------
+# 1. Set Working Directory
+# ------------------------------
+
 setwd("~/Documents/Obese_Microbiome/4.Compositional_Profiles")
+
+
+
+
+# -----------------------------------
+# 2. Load Phyloseq Object & Packages
+# -----------------------------------
+
 load("~/Documents/Obese_Microbiome/1.Raw_Data/Building_Phyloseq.RData")
 
+# Load packages
 library(phyloseq)
 library(dplyr)
 library(ggplot2)
-library(car)  # For Export()
+library(car)  
+
+
+
+
+# -------------------------------------------
+# 3. Export ASV table at each taxonomic rank
+# -------------------------------------------
+
+# Extract base tables
+asv_count_table <- as.data.frame(otu_table(ps))
+taxonomy_table <- as.data.frame(tax_table(ps))
+sample_metadata <- as(sample_data(ps), "data.frame")
+
+
+# Sort ASVs by total count
+asv_count_table$TotalCounts <- rowSums(asv_count_table)
+asv_taxonomy_table_sorted <- asv_count_table[order(-asv_count_table$TotalCounts), ]
+rownames(asv_taxonomy_table_sorted) <- NULL
+Export(asv_taxonomy_table_sorted, "asv_taxonomy_table_sorted.xlsx")
+
 
 # Helper function: summarize and export by taxonomic level
 process_taxonomic_level <- function(level, prefix) {
@@ -69,16 +101,8 @@ process_taxonomic_level <- function(level, prefix) {
   Export(tax_with_metadata_rel, paste0(prefix, "_Rel_", level, ".xlsx"), row.names = FALSE)
 }
 
-# Extract base tables
-asv_count_table <- as.data.frame(otu_table(ps))
-taxonomy_table <- as.data.frame(tax_table(ps))
-sample_metadata <- as(sample_data(ps), "data.frame")
 
-# Sort ASVs by total count
-asv_count_table$TotalCounts <- rowSums(asv_count_table)
-asv_taxonomy_table_sorted <- asv_count_table[order(-asv_count_table$TotalCounts), ]
-rownames(asv_taxonomy_table_sorted) <- NULL
-Export(asv_taxonomy_table_sorted, "asv_taxonomy_table_sorted.xlsx")
+
 
 # Process each taxonomic rank
 levels <- c("Phylum", "Class", "Order", "Family", "Genus")
