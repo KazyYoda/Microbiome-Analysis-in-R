@@ -24,7 +24,7 @@ BiocManager::install("biomformat") # to read and manipulate BIOM files.
 
 
 # Install CRAN packages
-install.packages(c("ape", "dplyr", "readxl", "tibble"))
+install.packages(c("ape", "dplyr", "readxl", "tibble", "rio", "car"))
 
 
 # Load packages
@@ -33,6 +33,8 @@ library(ape)
 library(readxl)
 library(dplyr)
 library(tibble)
+library(rio)
+library(car)
 
 
 
@@ -53,7 +55,7 @@ tree_file      <- "tree.nwk"              # Rooted phylogenetic tree
 feature_table   <- read_excel(asv_table_file)
 tax_table_raw   <- read.delim(taxonomy_file, sep = "\t", header = TRUE)
 metadata        <- read.delim(metadata_file)
-phy_tree_object <- read_tree(tree_file)
+phy_tree        <- read_tree(tree_file)
 
 
 # Exploring data
@@ -64,17 +66,18 @@ head(metadata)
 
 
 
-#---------------------------------
-# 3. Building the Phyloseq Object
-#---------------------------------
+# ------------------------------
+# 3. Prepare Feature Table
+# ------------------------------
 
 ## Data manipulation before constructing the phyloseq object
 
 # Phyloseq objects need to have row.names. Define the row names from the ASV_ID column
 feature_table_mat <- feature_table %>%
-  tibble::column_to_rownames("ASV_ID") 
+  column_to_rownames("ASV_ID")
 
 head(feature_table_mat)
+
 
 # Check sample order in metadata to match the sample ID in feature_table_mat
 sample_order <- names(feature_table_mat)
@@ -84,7 +87,8 @@ sample_order
 identical(sample_order, metadata$SampleID)
 # [FALSE]
 
-# Reorders metadata to have rows in the same order as sample_order, based on matching the sampleid column.
+
+# [FALSE] then, Reorders metadata to have rows in the same order as sample_order, based on matching the sampleid column.
 metadata_matched <- metadata %>%
   slice(match(sample_order, sampleid)) %>% 
   rename(SampleID = sampleid,
@@ -92,36 +96,51 @@ metadata_matched <- metadata %>%
 
 head(metadata_matched)
 
-# Add the SampleID column to rows of metadata_matched
-rownames(metadata_matched) <- metadata_matched$SampleID
 
+# Set rownames as SampleID
+rownames(metadata_matched) <- metadata_matched$SampleID
 head(metadata_matched)
+
 
 # To check if SampleID are in the same order
 identical(sample_order, metadata_matched$SampleID)
-# [TRUE]
+# [TRUE] You can proceed the next step.
 
+
+
+
+# ------------------------------
+# 4. Prepare Taxonomy Table
+# ------------------------------
 
 # Format taxonomy table for phyloseq
-taxonomy <- tax_table_raw
-head(taxonomy)
-taxonomy <- taxonomy[, c("Feature.ID", "Taxon")] #Select only "Feature.ID" and "Taxon" columns
+# Keep only necessary columns
+taxonomy <- tax_table_raw[, c("Feature.ID", "Taxon")]
 taxonomy$Taxon <- as.character(taxonomy$Taxon)
-taxonomy_split <- strsplit(taxonomy$Taxon, "; ") # Split taxonomic ranks
+head(taxonomy)
 
+
+# Split taxonomy string into ranks
+taxonomy_split <- strsplit(taxonomy$Taxon, "; ")
 head(taxonomy_split)
 
-# Create a matrix with columns: Kingdom, Phylum, Class, Order, Family, Genus
+
+# Create taxonomy matrix (6 levels: Kingdom to Genus)
 taxonomy_matrix <- do.call(rbind, lapply(taxonomy_split, function(x) {
-  length(x) <- 6  # Ensure 6 levels
+  length(x) <- 6
   return(x)
 }))
 
-# Add the Feature.ID column to rows of taxonomy_matrix
+# Assign row names as ASV IDs
 rownames(taxonomy_matrix) <- taxonomy$Feature.ID
-
 head(taxonomy_matrix)
 
+
+
+
+# ------------------------------
+# 5. Build the Phyloseq Object
+# ------------------------------
 
 # Build the phyloseq object
 ps <- phyloseq(otu_table(feature_table_mat,  taxa_are_rows = TRUE), 
@@ -129,44 +148,70 @@ ps <- phyloseq(otu_table(feature_table_mat,  taxa_are_rows = TRUE),
                sample_data(metadata_matched), 
                phy_tree(phy_tree))
 
+# Confirm structure
 ps
 
-# Exploring Phyloseq Components
-sample_names(ps)[1:10]
-tax_table(ps)[1:10]
-otu_table(ps)[1:10]
-rank_names(ps)
-sample_variables(ps)
-summary(sample_sums(ps))
 
-#  rename the ranks inside your tax_table
+
+# Rename taxonomic ranks inside your tax_table
 colnames(tax_table(ps)) <- c("Kingdom", "Phylum", "Class", 
                              "Order", "Family", "Genus")
 rank_names(ps)
 
 
-# If you want to check if there are any missing classifications, you can do:
+
+
+# ------------------------------
+# 6. Explore Phyloseq Object
+# ------------------------------
+
+# Basic inspection
+sample_names(ps)[1:5]
+tax_table(ps)[1:5, ]
+otu_table(ps)[1:5, ]
+rank_names(ps)
+sample_variables(ps)
+summary(sample_sums(ps))
+
+# Check for missing taxonomy
 table(is.na(tax_table(ps)))
 
 
-# Get OTU counts at each taxonomy level
-## Make a data frame showing each ASV's taxonomy
+
+
+
+# ------------------------------
+# 7. Summarize Taxonomy Table
+# ------------------------------
+
+# Convert taxonomy table to data frame
 taxa_df <- as.data.frame(tax_table(ps))
 
-## Summarize the number of unique ASVs at each taxonomic rank (exclude unclassified)
+# Count unique taxa at each rank
 summary_table <- data.frame(
-  Rank = c("Kingdon", "Phylum", "Class", "Order", "Family", "Genus"),
+  Rank = colnames(taxa_df),
   Unique_Taxa = sapply(taxa_df, function(x) length(unique(na.omit(x))))
 )
 
-summary_table
+  
+# View summary
+print(summary_table)
 
-# add ASV column to taxa_df
-taxa_df_asv <- data.frame(ASV_ID = rownames(taxa_df),
-                          taxa_df)
-taxa_rank_asv <- data.frame(ASV_ID = rownames(taxa_df),
-                            taxa_df, data.frame(otu_table(ps))
-                            )
 
+# ------------------------------
+# 8. Export Taxonomy Tables
+# ------------------------------
+
+# Add ASV ID to taxonomy
+taxa_df_asv <- data.frame(ASV_ID = rownames(taxa_df), taxa_df)
+
+# Combine with abundance data
+taxa_rank_asv <- data.frame(
+  ASV_ID = rownames(taxa_df),
+  taxa_df,
+  as.data.frame(otu_table(ps))
+)
+
+# Export as Excel files;  You can rename the files by changing the string ("taxa_df_asv.xlsx" → "your_custom_filename.xlsx")
 Export(taxa_df_asv, "taxa_df_asv.xlsx")
 Export(taxa_rank_asv, "taxa_rank_asv.xlsx")
