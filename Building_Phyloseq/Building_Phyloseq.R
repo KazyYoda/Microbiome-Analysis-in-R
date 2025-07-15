@@ -43,7 +43,7 @@ library(car)
 # 2. Import Input Files
 # ------------------------------
 
-# Set working directory
+# Set working directory (you can change your directory name) 
 setwd("~/Documents/Microbiome_Analysis_R/1.Raw_Data")
 
 # Define input file paths
