@@ -44,7 +44,8 @@ pos_metabo <- read_excel("POS_Metabo.xlsx")
 neg_metabo <- read_excel("NEG_Metabo.xlsx")
 
 # If data contain 0/NA then add 1 to numeric columns only to avoid log2(0)
-data <- data %>% mutate(across(where(is.numeric), ~.x + 1))
+data <- data %>%
+  mutate(across(where(is.numeric), ~ replace_na(.x, 0) + 1))
 
 # Check SampleID consistency
 identical(pos_metabo$SampleID, neg_metabo$SampleID)
@@ -276,3 +277,14 @@ log2_matrix_neg_t <- t(log_matrix_neg)
 plot_heatmap(mat = log2_matrix_neg_t,
              metadata = Metadata_55,
              legend_title = "Log2 (NEG)")
+
+
+
+
+# =============================================
+# 4. Statistical analysis - direct comparison
+# =============================================
+
+
+
+
