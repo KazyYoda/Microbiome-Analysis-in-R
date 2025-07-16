@@ -227,10 +227,16 @@ plot_heatmap <- function(mat, metadata, legend_title = "Log2") {
 log2FC_pos_reltoN <- log2FC_relative_to_N(posmetabo, Metadata_55, control = "N")
 log2FC_neg_reltoN <- log2FC_relative_to_N(negmetabo, Metadata_55, control = "N")
 
+Export(log2FC_pos_reltoN, "1_log2FC_pos_reltoN.xlsx")
+Export(log2FC_neg_reltoN, "2_log2FC_neg_reltoN.xlsx")
+
 
 #2.  Summarize log2FC by group
 log2FC_grouped_pos <- summarize_log2FC(log2FC_pos_reltoN, Metadata_55, "POS")
 log2FC_grouped_neg <- summarize_log2FC(log2FC_neg_reltoN, Metadata_55, "NEG")
+
+Export(log2FC_grouped_pos, "1_log2FC_grouped_pos.xlsx")
+Export(log2FC_grouped_neg, "2_log2FC_grouped_neg.xlsx")
 
 
 # 3. Plot grouped barplot
