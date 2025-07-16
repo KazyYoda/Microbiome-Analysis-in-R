@@ -10,12 +10,12 @@ This project analyzes the relative abundance and regulation of positive- and neg
 5.Metabolites/
 ├── POS_Metabo.xlsx          # Positive-ion metabolite intensity data
 ├── NEG_Metabo.xlsx          # Negative-ion metabolite intensity data
-├── Microbiome_Metabo.R      # Main R script for analysis and visualization
+├── Metabolite_analysis.R      # Main R script for analysis and visualization
 ├── output/
 │   ├── 1_log2FC_pos_reltoN.xlsx
-│   ├── 2_log2FC_grouped_pos.xlsx
-│   ├── 2_log2FC_grouped_neg.xlsx
-│   └── 2_log2FC_neg_reltoN.xlsx
+│   ├── 2_log2FC_neg_reltoN.xlsx
+│   ├── 1_log2FC_grouped_pos.xlsx
+│   └── 2_log2FC_grouped_neg.xlsx
 ```
 
 ---
@@ -25,8 +25,8 @@ This project analyzes the relative abundance and regulation of positive- and neg
 Install the required R packages:
 
 ```r
-install.packages(c("dplyr", "ggplot2", "gridExtra", "readxl", "car",
-                   "ComplexHeatmap", "circlize", "tidyr", "ggh4x", "writexl"))
+install.packages(c("dplyr", "tidyr", "readxl", "ggplot2", "car",
+                   "ComplexHeatmap", "circlize"))
 ```
 
 ---
