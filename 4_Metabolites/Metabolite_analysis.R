@@ -10,6 +10,7 @@
 #        - Heatmaps of log2FC and log2-transformed relative abundance
 #        - Grouped bar plots colored by direction of regulation
 #   5. Export summary statistics for downstream analysis
+#   6. Perform statistical analysis
 ###########################################################################
 
 
@@ -280,6 +281,7 @@ plot_heatmap(mat = log2_matrix_neg_t,
 
 
 
+
 # ===================================================
 # 4. Normality and homogeneity of variance checking
 # ===================================================
@@ -443,4 +445,4 @@ dunnTest_metabo <- function(krus_pvalue_descp, metabo_data, metadata, metabo_des
 # Example Usage: Direct comparison - dunnTest
 # ---------------------------------------------------------------
 pos_dunn <- dunnTest_metabo(pos_krus, log2_matrix_pos, Metadata_55, pos_descp, "pos")
-neg_dunn <- dunnTest_metabo(neg_krus, log2_matrix_meg, Metadata_55, neg_descp, "neg")
+neg_dunn <- dunnTest_metabo(neg_krus, log2_matrix_neg, Metadata_55, neg_descp, "neg")
