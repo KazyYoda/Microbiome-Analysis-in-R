@@ -1,26 +1,23 @@
 # Microbiome Metabolites Analysis
 
-This project analyzes the relative abundance and regulation of positive- and negative-ion metabolites across three groups: Normal (N), Overweight (OW), and Obese (OB). It uses log2 and log2 fold-change calculations, summary statistics, and visualizations including heatmaps and bar plots.
+This project analyzes metabolite profiles (positive and negative ion modes) in relation to obesity status across three groups: Normal (N), Overweight (OW), and Obese (OB). It computes log2 and log2 fold changes, summarizes results, and visualizes differential patterns using heatmaps and bar plots.
 
 ---
 
-## 📁 Directory Structure
+## 📥 Input
 
-```
-4.Metabolites/
-├── POS_Metabo.xlsx          # Positive-ion metabolite intensity data
-├── NEG_Metabo.xlsx          # Negative-ion metabolite intensity data
-├── Metabolite_analysis.R      # Main R script for analysis and visualization
-├── output/
-│   ├── 1_log2FC_pos_reltoN.xlsx
-│   ├── 2_log2FC_neg_reltoN.xlsx
-│   ├── 1_log2FC_grouped_pos.xlsx
-│   └── 2_log2FC_grouped_neg.xlsx
-```
+* `POS_Metabo.xlsx` — Positive-ion metabolite data
+* `NEG_Metabo.xlsx` — Negative-ion metabolite data
+
+Each file must include:
+
+* `SampleID` column
+* `Group` column (values: N, OW, OB)
+* Metabolite columns 
 
 ---
 
-## 🛠️ Requirements
+## 📦 Required Packages
 
 Install the required R packages:
 
@@ -35,42 +32,82 @@ install.packages(c("dplyr", "tidyr", "readxl", "ggplot2", "car",
 
 ### Step 1: Data Import and Metadata Preparation
 
-* Import metabolite intensity tables (POS and NEG ion modes).
-* Filter and format metadata to match 55 relevant samples.
+* Load both POS and NEG metabolite datasets.
+* Ensure `SampleID` alignment between POS and NEG.
+* Extract `SampleID` and `Group` metadata for 55 samples.
 
-### Step 2: Log2 Fold Change Calculation
+### Step 2: Compute Log2 Fold Change (log2FC)
 
-* Calculate mean metabolite intensity in Normal group (baseline).
-* Compute log2 fold-change (log2FC) relative to baseline using `sweep()`.
-* Save output tables for both POS and NEG datasets.
+* Calculate mean metabolite abundance in Normal (N) group.
+* Apply `sweep()` to compute log2FC relative to Normal group.
+* If data contain `NA` or zero values then add 1 to numeric columns only to avoid log2(0)
+```r
+data <- data %>% mutate(across(where(is.numeric), ~.x + 1))
+```
 
 ### Step 3: Summary Statistics
 
-* Summarize log2FC per group per metabolite.
-* Count number of upregulated/downregulated metabolites (relative to N).
-* Export grouped statistics.
+* Convert data to long format.
+* Calculate mean ± SD log2FC for each metabolite within each group.
+* Classify metabolites as Upregulated / Downregulated / No Change.
+* Count total regulated metabolites per group.
 
 ### Step 4: Visualization
 
-* Generate heatmaps (Clustered by Spearman correlation).
-* Plot grouped bar charts with error bars (SD) showing mean log2FC.
+* Generate clustered heatmaps (Spearman distance):
+  * log2-transformed metabolite realtive abundance
+    
+* Create grouped bar plots with error bars (SD), colored by direction.
+  * log2FC
+
+### Step 5: Export Outputs
+
+* Export log2FC tables and grouped summaries as `.xlsx` files for further use.
 
 ---
 
-## 📊 Output Files
+## 📊 Statistical Testing and Interpretation
 
-* **log2FC\_pos\_reltoN.xlsx**: Log2FC values for each positive-ion metabolite.
-* **log2FC\_grouped\_pos.xlsx**: Mean log2FC and SD by group (POS).
-* **log2FC\_neg\_reltoN.xlsx**: Log2FC values for each negative-ion metabolite.
-* **log2FC\_grouped\_neg.xlsx**: Mean log2FC and SD by group (NEG).
+* This workflow does **not** perform hypothesis testing by default.
+* Optional: Integrate Kruskal-Wallis or Dunn’s post hoc test manually using `kruskal.test()` or `dunn.test()`.
+* Interpretation is based on magnitude and direction of log2FC:
+
+  * Positive = Upregulated
+  * Negative = Downregulated
+
+---
+
+## 📈 Visualization
+
+* **Heatmaps**:
+
+  * Clustered by Spearman correlation
+  * Colored using diverging palette centered at 0 (gray for no change)
+
+* **Bar Plots**:
+
+  * Mean log2FC ± SD
+  * Colored by regulation direction
+  * Group-specific facet panels
+
+---
+
+## 📁 Output Files
+
+| File Name                   | Description                                        |
+| --------------------------- | -------------------------------------------------- |
+| `1_log2FC_pos_reltoN.xlsx`  | Log2FC of POS metabolites relative to Normal group |
+| `2_log2FC_grouped_pos.xlsx` | Mean ± SD log2FC of POS metabolites per group      |
+| `2_log2FC_neg_reltoN.xlsx`  | Log2FC of NEG metabolites relative to Normal group |
+| `2_log2FC_grouped_neg.xlsx` | Mean ± SD log2FC of NEG metabolites per group      |
 
 ---
 
 ## 📎 Notes
 
-* Be sure your `POS_Metabo.xlsx` and `NEG_Metabo.xlsx` files contain matching `SampleID` columns.
-* Heatmaps are based on log2 values and colored according to relative abundance.
-* Metabolites are renamed as `pos1`, `pos2`, ... or `neg1`, `neg2`, ... to maintain consistency.
+* Make sure both datasets (`POS_Metabo.xlsx` and `NEG_Metabo.xlsx`) share identical `SampleID` ordering.
+* `log2FC` values are calculated relative to **Normal (N)** group.
+* Zero or missing values should be handled prior to transformation.
+* Metabolites are renamed to `pos1`, `pos2`, ..., `neg1`, `neg2`, ... for plotting clarity.
 
 ---
-
