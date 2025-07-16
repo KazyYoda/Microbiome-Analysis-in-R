@@ -42,7 +42,8 @@ install.packages(c("dplyr", "tidyr", "readxl", "ggplot2", "car",
 * Apply `sweep()` to compute log2FC relative to Normal group.
 * If data contain `NA` or zero values then add 1 to numeric columns only to avoid log2(0)
 ```r
-data <- data %>% mutate(across(where(is.numeric), ~.x + 1))
+data <- data %>%
+  mutate(across(where(is.numeric), ~ replace_na(.x, 0) + 1))
 ```
 
 ### Step 3: Summary Statistics
