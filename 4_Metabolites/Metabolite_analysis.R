@@ -444,5 +444,5 @@ dunnTest_metabo <- function(krus_pvalue_descp, metabo_data, metadata, metabo_des
 # ---------------------------------------------------------------
 # Example Usage: Direct comparison - dunnTest
 # ---------------------------------------------------------------
-pos_dunn <- dunnTest_metabo(pos_krus, log2_matrix_pos, Metadata_55, pos_descp, "pos")
-neg_dunn <- dunnTest_metabo(neg_krus, log2_matrix_neg, Metadata_55, neg_descp, "neg")
+pos_dunn <- dunnTest_metabo(pos_kruskal, log2_matrix_pos, Metadata_55, pos_descp, "pos")
+neg_dunn <- dunnTest_metabo(neg_kruskal, log2_matrix_neg, Metadata_55, neg_descp, "neg")
