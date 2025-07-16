@@ -1,6 +1,6 @@
 # Microbiome Metabolites Analysis
 
-This project analyzes the relative abundance and regulation of positive- and negative-ion metabolites across three groups: Normal (N), Overweight (OW), and Obese (OB). It uses log2 fold-change calculations, summary statistics, and visualizations including heatmaps and bar plots.
+This project analyzes the relative abundance and regulation of positive- and negative-ion metabolites across three groups: Normal (N), Overweight (OW), and Obese (OB). It uses log2 and log2 fold-change calculations, summary statistics, and visualizations including heatmaps and bar plots.
 
 ---
 
