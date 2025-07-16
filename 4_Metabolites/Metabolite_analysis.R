@@ -10,7 +10,7 @@
 #        - Heatmaps of log2FC and log2-transformed relative abundance
 #        - Grouped bar plots colored by direction of regulation
 #   5. Export summary statistics for downstream analysis
-#   6. Perform statistical analysis
+#   6. Perform statistical analysis (direct comparison)
 ###########################################################################
 
 
