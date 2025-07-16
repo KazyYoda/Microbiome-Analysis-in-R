@@ -280,64 +280,163 @@ plot_heatmap(mat = log2_matrix_neg_t,
 
 
 
+# ===================================================
+# 4. Normality and homogeneity of variance checking
+# ===================================================
+
+# Function to check normality and homogeneity of variance
+norm_var_check <- function(metabo_data, metadata, metabo_descp, tag = "pos") {
+    
+    # Ensure required library is loaded
+    library(dplyr)
+    library(car)  # for leveneTest
+    
+    # Convert input matrix to data frame
+    log2_metabo_data <- as.data.frame(metabo_data)
+    
+    # --- Normality Check using Shapiro-Wilk ---
+    shapiro_list <- apply(log2_metabo_data, 2, shapiro.test)
+    
+    metabo_shapiro <- data.frame(
+        Metabolite = metabo_descp$Metabolite,
+        Code = metabo_descp$Code,
+        W = sapply(shapiro_list, function(x) x$statistic),
+        Norm_p.value = sapply(shapiro_list, function(x) x$p.value)
+    ) %>%
+        mutate(across(where(is.numeric), \(x) round(x, digits = 6)))
+    
+    # --- Homogeneity of Variance using Levene's Test ---
+    levene_list <- lapply(log2_metabo_data, function(x) {
+        leveneTest(x ~ factor(metadata$Group), data = metadata)
+    })
+    
+    # Extract p-values from each Levene test
+    levene_pvals <- sapply(levene_list, function(result) {
+        if (is.data.frame(result) && "Pr(>F)" %in% colnames(result)) {
+            return(result$`Pr(>F)`[1])
+        } else {
+            return(NA)
+        }
+    })
+    
+    levene_df <- data.frame(
+        Metabolite = names(levene_list),
+        Var_p.value = round(levene_pvals, 3)
+    )
+    
+    # --- Combine results ---
+    NormVar <- left_join(metabo_shapiro, levene_df, by = "Metabolite")
+    return(NormVar)
+}
+
+# ---------------------------------------------------------------
+# Example Usage: Normality and homogeneity of variance checking
+# ---------------------------------------------------------------
+pos_norm_var <- norm_var_check(log2_matrix_pos, Metadata_55, pos_descp, "pos")
+neg_norm_var <- norm_var_check(log2_matrix_neg, Metadata_55, neg_descp, "pos")
+
+
+               
 
 # =============================================
-# 4. Statistical analysis - direct comparison
+# 5. Statistical analysis - direct comparison
 # =============================================
+
+# ----- Kruskal-Wallis: Helper function -----
+kruskal_metabo <- function(metabo_norm_var, metabo_data, metadata, metabo_descp, tag = "pos") {
+    
+    # Ensure input matrix is treated as a data frame
+    metabo_data <- as.data.frame(metabo_data)
+    
+    # Step 1: Filter metabolites that fail both normality & equal variance assumptions
+    nonNorm <- metabo_norm_var %>% 
+        filter(Norm_p.value < 0.05)
+    
+    # Step 2: Subset non-normal metabolites from the full dataset
+    metabo_kruskal <- metabo_data %>% 
+        select(all_of(nonNorm$Code))
+    
+    # Step 3: Perform Kruskal-Wallis test for each metabolite
+    krus_results <- lapply(metabo_kruskal, function(x) kruskal.test(x ~ Group, data = metadata))
+    
+    # Step 4: Extract p-values and format results
+    krus_pvalue <- data.frame(
+        Code = names(metabo_kruskal),
+        p.value = sapply(krus_results, function(res) res$p.value)
+    ) %>%
+        mutate(p.value = round(p.value, 6))  # Round p-values to 6 digits
+    
+    # Step 5: Merge with metabolite descriptions
+    krus_pvalue_descp <- krus_pvalue %>%
+        left_join(nonNorm, by = c("Code" = "Code")) %>%
+        select(Code, Metabolite, p.value)
+    
+    # Print the result to console
+    print(krus_pvalue_descp)
+}
+
+# ---------------------------------------------------------------
+# Example Usage: Direct comparison - dunnTest
+# ---------------------------------------------------------------
+pos_kruskal <- kruskal_metabo(log2_matrix_pos, Metadata_55, pos_descp, "pos")
+neg_krukal <- kruskal_metabo(log2_matrix_neg, Metadata_55, neg_descp, "neg")
+
+               
+
 # ----- Dunn's Test - Post-hoc Test for Kruskal-Wallis: Helper function -----
- dunnTest_metabo <- function(krus_pvalue_descp, metabo_data, metadata, metabo_descp, tag = "pos") {
-     
-     # Ensure input matrix is treated as a data frame
-     metabo_data <- as.data.frame(metabo_data)
-     
-     # Rename colnames for metabo_data
-     colnames(metabo_data) <- metabo_descp$Metabolite
-     
-     # Load required package
-     library(FSA)
-     library(dplyr)
-     
-     # 1. Filter only metabolites with significant Kruskal-Wallis p-values
-     krus_sig <- krus_pvalue_descp %>% 
-         filter(p.value < 0.05)
-     
-     # 2. Run Dunn's test for each significant metabolite
-     dunn_test <- setNames(
-         lapply(krus_sig$Metabolite, function(x) {
-             dunn_res <- dunnTest(metabo_data[[x]] ~ Group, data = metadata, method = "bh")  # BH adjustment
-             dunn_df <- as.data.frame(dunn_res$res) 
-             return(dunn_df)
-         }),
-         krus_sig$Metabolite 
-     )
-     
-     # 3. Extract significant pairwise comparisons (adjusted p < 0.05)
-     dunn_sig <- do.call(rbind, lapply(names(dunn_test), function(metabolite) {
-         df <- dunn_test[[metabolite]]
-         df$Metabolite <- metabolite
-         df <- df[df$P.adj < 0.05, ]
-         if (nrow(df) > 0) return(df)
-         else return(NULL)
-     }))
-     
-     # 4. Merge with metabolite descriptions (if available)
-     if (!is.null(dunn_sig)) {
-         dunn_sig <- data.frame(dunn_sig, row.names = NULL)
-         
-         # Ensure metabo_descp is a tibble with a "Metabolite" column
-         if (!("Metabolite" %in% colnames(metabo_descp))) {
-             stop("metabo_descp must be a tibble/dataframe with a 'Metabolite' column.")
-         }
-         
-         dunn_sig_descp <- dunn_sig %>%
-             left_join(metabo_descp, by = "Metabolite")
-         
-         return(dunn_sig_descp)
-         
-     } else {
-         message("No significant pairwise differences found after adjustment.")
-         return(NULL)
-     }
+dunnTest_metabo <- function(krus_pvalue_descp, metabo_data, metadata, metabo_descp, tag = "pos") {
+    
+    # Ensure input matrix is treated as a data frame
+    metabo_data <- as.data.frame(metabo_data)
+    
+    # Rename colnames for metabo_data
+    colnames(metabo_data) <- metabo_descp$Metabolite
+    
+    # Load required package
+    library(FSA)
+    library(dplyr)
+    
+    # 1. Filter only metabolites with significant Kruskal-Wallis p-values
+    krus_sig <- krus_pvalue_descp %>% 
+        filter(p.value < 0.05)
+    
+    # 2. Run Dunn's test for each significant metabolite
+    dunn_test <- setNames(
+        lapply(krus_sig$Metabolite, function(x) {
+            dunn_res <- dunnTest(metabo_data[[x]] ~ Group, data = metadata, method = "bh")  # BH adjustment
+            dunn_df <- as.data.frame(dunn_res$res) 
+            return(dunn_df)
+        }),
+        krus_sig$Metabolite 
+    )
+    
+    # 3. Extract significant pairwise comparisons (adjusted p < 0.05)
+    dunn_sig <- do.call(rbind, lapply(names(dunn_test), function(metabolite) {
+        df <- dunn_test[[metabolite]]
+        df$Metabolite <- metabolite
+        df <- df[df$P.adj < 0.05, ]
+        if (nrow(df) > 0) return(df)
+        else return(NULL)
+    }))
+    
+    # 4. Merge with metabolite descriptions (if available)
+    if (!is.null(dunn_sig)) {
+        dunn_sig <- data.frame(dunn_sig, row.names = NULL)
+        
+        # Ensure metabo_descp is a tibble with a "Metabolite" column
+        if (!("Metabolite" %in% colnames(metabo_descp))) {
+            stop("metabo_descp must be a tibble/dataframe with a 'Metabolite' column.")
+        }
+        
+        dunn_sig_descp <- dunn_sig %>%
+            left_join(metabo_descp, by = "Metabolite")
+        
+        return(dunn_sig_descp)
+        
+    } else {
+        message("No significant pairwise differences found after adjustment.")
+        return(NULL)
+    }
 }
 
 # ---------------------------------------------------------------
