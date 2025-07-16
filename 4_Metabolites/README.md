@@ -69,7 +69,7 @@ install.packages(c("dplyr", "tidyr", "readxl", "ggplot2", "car",
 ## 📎 Notes
 
 * Be sure your `POS_Metabo.xlsx` and `NEG_Metabo.xlsx` files contain matching `SampleID` columns.
-* Heatmaps are based on log2FC values and colored according to regulation.
+* Heatmaps are based on log2 values and colored according to relative abundance.
 * Metabolites are renamed as `pos1`, `pos2`, ... or `neg1`, `neg2`, ... to maintain consistency.
 
 ---
