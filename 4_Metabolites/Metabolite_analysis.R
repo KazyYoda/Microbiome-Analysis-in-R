@@ -284,7 +284,64 @@ plot_heatmap(mat = log2_matrix_neg_t,
 # =============================================
 # 4. Statistical analysis - direct comparison
 # =============================================
+# ----- Dunn's Test - Post-hoc Test for Kruskal-Wallis: Helper function -----
+ dunnTest_metabo <- function(krus_pvalue_descp, metabo_data, metadata, metabo_descp, tag = "pos") {
+     
+     # Ensure input matrix is treated as a data frame
+     metabo_data <- as.data.frame(metabo_data)
+     
+     # Rename colnames for metabo_data
+     colnames(metabo_data) <- metabo_descp$Metabolite
+     
+     # Load required package
+     library(FSA)
+     library(dplyr)
+     
+     # 1. Filter only metabolites with significant Kruskal-Wallis p-values
+     krus_sig <- krus_pvalue_descp %>% 
+         filter(p.value < 0.05)
+     
+     # 2. Run Dunn's test for each significant metabolite
+     dunn_test <- setNames(
+         lapply(krus_sig$Metabolite, function(x) {
+             dunn_res <- dunnTest(metabo_data[[x]] ~ Group, data = metadata, method = "bh")  # BH adjustment
+             dunn_df <- as.data.frame(dunn_res$res) 
+             return(dunn_df)
+         }),
+         krus_sig$Metabolite 
+     )
+     
+     # 3. Extract significant pairwise comparisons (adjusted p < 0.05)
+     dunn_sig <- do.call(rbind, lapply(names(dunn_test), function(metabolite) {
+         df <- dunn_test[[metabolite]]
+         df$Metabolite <- metabolite
+         df <- df[df$P.adj < 0.05, ]
+         if (nrow(df) > 0) return(df)
+         else return(NULL)
+     }))
+     
+     # 4. Merge with metabolite descriptions (if available)
+     if (!is.null(dunn_sig)) {
+         dunn_sig <- data.frame(dunn_sig, row.names = NULL)
+         
+         # Ensure metabo_descp is a tibble with a "Metabolite" column
+         if (!("Metabolite" %in% colnames(metabo_descp))) {
+             stop("metabo_descp must be a tibble/dataframe with a 'Metabolite' column.")
+         }
+         
+         dunn_sig_descp <- dunn_sig %>%
+             left_join(metabo_descp, by = "Metabolite")
+         
+         return(dunn_sig_descp)
+         
+     } else {
+         message("No significant pairwise differences found after adjustment.")
+         return(NULL)
+     }
+}
 
-
-
-
+# ---------------------------------------------------------------
+# Example Usage: Direct comparison - dunnTest
+# ---------------------------------------------------------------
+pos_dunn <- dunnTest_metabo(pos_krus, log2_matrix_pos, Metadata_55, pos_descp, "pos")
+neg_dunn <- dunnTest_metabo(neg_krus, log2_matrix_meg, Metadata_55, neg_descp, "neg")
