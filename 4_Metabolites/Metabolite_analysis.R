@@ -261,11 +261,18 @@ log_matrix_pos <- as.matrix(log2(posmetabo))
 rownames(log_matrix_pos) <- Metadata_55$SampleID
 log2_matrix_pos_t <- t(log_matrix_pos)
 
-# Generate heatmap for POS log2FC
+# Generate heatmap for POS log2
 plot_heatmap(mat = log2_matrix_pos_t,
              metadata = Metadata_55,
              legend_title = "Log2 (POS)")
 
+
+# Transpose NEG log2FC matrix for heatmap (Metabolites as rows)
+log_matrix_neg <- as.matrix(log2(negmetabo))
+rownames(log_matrix_neg) <- Metadata_55$SampleID
+log2_matrix_neg_t <- t(log_matrix_neg)
+
+# Generate heatmap for NEG log2
 plot_heatmap(mat = log2_matrix_neg_t,
              metadata = Metadata_55,
              legend_title = "Log2 (NEG)")
