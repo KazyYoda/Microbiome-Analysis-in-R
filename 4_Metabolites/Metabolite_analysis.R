@@ -381,7 +381,7 @@ kruskal_metabo <- function(metabo_norm_var, metabo_data, metadata, metabo_descp,
 # Example Usage: Direct comparison - kruskal
 # ---------------------------------------------------------------
 pos_kruskal <- kruskal_metabo(log2_matrix_pos, Metadata_55, pos_descp, "pos")
-neg_krukal <- kruskal_metabo(log2_matrix_neg, Metadata_55, neg_descp, "neg")
+neg_kruskal <- kruskal_metabo(log2_matrix_neg, Metadata_55, neg_descp, "neg")
 
                
 
