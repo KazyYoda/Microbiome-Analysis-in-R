@@ -7,7 +7,7 @@ This project analyzes the relative abundance and regulation of positive- and neg
 ## 📁 Directory Structure
 
 ```
-5.Metabolites/
+4.Metabolites/
 ├── POS_Metabo.xlsx          # Positive-ion metabolite intensity data
 ├── NEG_Metabo.xlsx          # Negative-ion metabolite intensity data
 ├── Metabolite_analysis.R      # Main R script for analysis and visualization
