@@ -1,6 +1,6 @@
 # Microbiome Metabolites Analysis
 
-This project analyzes metabolite profiles (positive and negative ion modes) in relation to obesity status across three groups: Normal (N), Overweight (OW), and Obese (OB). It computes log2 and log2 fold changes, summarizes results, and visualizes differential patterns using heatmaps and bar plots.
+This script analyzes metabolite profiles (positive and negative ion modes) in relation to obesity status across three groups: Normal (N), Overweight (OW), and Obese (OB). It computes log2 and log2 fold changes, summarizes results, and visualizes differential patterns using heatmaps and bar plots.
 
 ---
 
