@@ -1,4 +1,4 @@
-# Microbiome Analysis: Metabolite Profiling with sPLS-DA
+# Microbiome Analysis: Metabolite Classification with sPLS-DA
 
 This R script performs a **sparse Partial Least Squares Discriminant Analysis (sPLS-DA)** on positive and negative ion metabolite datasets obtained from microbiome samples. It identifies key discriminative metabolites between defined groups (e.g., N, OW, OB), visualizes sample separation, and extracts variable importance metrics.
 
