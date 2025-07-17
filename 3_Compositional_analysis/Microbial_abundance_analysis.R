@@ -14,8 +14,8 @@
 # 1. Set Working Directory & Load .RData
 # ----------------------------------------
 
-setwd("~/Documents/Microbiome_Analysis_R/4.Compositional_Profiles")
-load("~/Documents/Microbiome_Analysis_R/4.Compositional_Profiles/Compositional_Profiles.RData")
+setwd("~/Documents/Microbiome_Analysis_R/3.Compositional_Profiles")
+load("~/Documents/Microbiome_Analysis_R/3.Compositional_Profiles/Compositional_Profiles.RData")
 
 
 # Load packages
