@@ -182,6 +182,15 @@ rda_plot <- function(rda_model, metadata, top_n = 100, scale_factor = 2, scaling
 # ---------------------------------------------------------------
 # Example Usage: RDA plot
 # ---------------------------------------------------------------
+
+# Parameters:
+# • rda_model - RDA model object (from vegan::rda())
+# • metadata - Metadata with SampleID and Group columns
+# • top_n - Number of top species to display as arrows
+# • scale_factor - Multiplier to stretch arrow length
+# • scaling_n - 1 = distances matter (samples), 2 = angles matter (features)
+# 📝 When scaling_n = 1, all feature arrows are grey to reflect distance-based scaling.
+
 rda_plot(rda_model = rda_model, metadata = Metadata_55, top_n = 100, 
          scale_factor = 2, scaling_n = 2)
 
