@@ -1,11 +1,21 @@
-##########################################################
-# Microbiome Analysis: Gut Microbiota + Metabolites (MFA)
-##########################################################
+################################################################################
+# Microbiome Analysis: Gut Microbiota + Metabolites - Multiple Factor Analysis
+# Author: Lucky
+# Date: 2025-07
+# Description:
+#   1. Prepare CLR-transformed genus data and scaled metabolite data (pos/neg ions)
+#   2. Merge datasets by sample ID and format for MFA input
+#   3. Perform MFA using the FactoMineR package
+#   4. Visualize sample projections on MFA dimensions (Dim 1 & 2)
+#   5. Extract and plot variable contributions by data group (microbiota vs. metabolites)
+#   6. Identify top contributing features and export their coordinates
+################################################################################
 
-# 📁 Set working directory
+
+# Set working directory
 setwd("~/Documents/Obese_Microbiome/7.MFA")
 
-# 📦 Load sPLS-DA workspace
+# Load sPLS-DA workspace
 load("~/Documents/Obese_Microbiome/6.sPLS-DA/sPLSDA.RData")
 
 
