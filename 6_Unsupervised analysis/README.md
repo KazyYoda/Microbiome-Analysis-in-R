@@ -1,9 +1,6 @@
-# 🔬 Microbiome-Metabolite Multi-Omics Integration using Multiple Factor Analysis (MFA)
+# Microbiome-Metabolite Multi-Omics Integration using Multiple Factor Analysis (MFA)
 
-**Author:** Lucky  
-**Date:** July 2025
-
-This repository performs integrative analysis of gut microbiota (genus-level) and metabolomics data (positive and negative ions) using Multiple Factor Analysis (MFA). The goal is to uncover shared structures and group differences (e.g., BMI categories) across datasets in a single reduced dimensional space.
+This script performs integrative analysis of gut microbiota (genus-level) and metabolomics data (positive and negative ions) using Multiple Factor Analysis (MFA). The goal is to uncover shared structures and group differences (e.g., BMI categories) across datasets in a reduced dimensional space.
 
 ---
 
