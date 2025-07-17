@@ -15,7 +15,7 @@
 # 1. Set Working Directory
 # ------------------------------
 
-setwd("~/Documents/Microbiome_Analysis_R/4.Compositional_Profiles")
+setwd("~/Documents/Microbiome_Analysis_R/3.Compositional_Profiles")
 
 
 
