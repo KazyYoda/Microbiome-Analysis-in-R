@@ -97,6 +97,8 @@ neg_descp <- data.frame(
   Metabolite = colnames(neg_metabo[c(-1, -2)])
 )
 
+metabo_descp <- rbind(pos_descp, neg_descp)
+
 
 
 
