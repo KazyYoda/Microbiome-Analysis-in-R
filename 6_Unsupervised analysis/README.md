@@ -103,7 +103,7 @@ library(ggplot2)
 | `res.mfa`             | MFA result object containing scores and loadings                |
 | `fviz_mfa_ind()` plot | Sample projection on MFA space with group ellipses              |
 | `fviz_mfa_var()` plots| Variable contributions and group correlations                   |
-| `fviz_contrib()` plots| Top contributing features per dimension                         |
+| `fviz_contrib()` plots| Contributing features per dimension                         |
 | `dimdesc(res.mfa, axis)`| Lists significant variables for each MFA axis                  |
 
 ---
@@ -111,8 +111,5 @@ library(ggplot2)
 ## 📝 Notes
 - Pseudocounts (+1) are used before CLR transformation to handle zeros.
 - Sample order is validated (`identical()`) to prevent alignment errors.
-- Feature colors can be customized based on data type:
-  - **Genus** = Purple `#660099`
-  - **Positive Ions** = Green `#228B22`
-  - **Negative Ions** = Red `#e02b35`
+- Feature colors can be customized.
 - Be sure to load `sPLSDA.RData` to access `metabo_scaled` and `Metadata_55`.
