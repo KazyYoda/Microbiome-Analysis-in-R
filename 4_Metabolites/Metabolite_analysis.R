@@ -380,8 +380,8 @@ kruskal_metabo <- function(metabo_norm_var, metabo_data, metadata, metabo_descp,
 # ---------------------------------------------------------------
 # Example Usage: Direct comparison - kruskal
 # ---------------------------------------------------------------
-pos_kruskal <- kruskal_metabo(log2_matrix_pos, Metadata_55, pos_descp, "pos")
-neg_kruskal <- kruskal_metabo(log2_matrix_neg, Metadata_55, neg_descp, "neg")
+pos_kruskal <- kruskal_metabo(pos_norm_var, log2_matrix_pos, Metadata_55, pos_descp, "pos")
+neg_kruskal <- kruskal_metabo(neg_norm_var, log2_matrix_neg, Metadata_55, neg_descp, "neg")
 
                
 
@@ -446,3 +446,119 @@ dunnTest_metabo <- function(krus_pvalue_descp, metabo_data, metadata, metabo_des
 # ---------------------------------------------------------------
 pos_dunn <- dunnTest_metabo(pos_kruskal, log2_matrix_pos, Metadata_55, pos_descp, "pos")
 neg_dunn <- dunnTest_metabo(neg_kruskal, log2_matrix_neg, Metadata_55, neg_descp, "neg")
+
+
+
+
+# ----- One-way ANOVA + TukeyHSD: Helper Function -----
+anova_metabo <- function(metabo_norm_var, metabo_data, metadata, metabo_descp, tag = "pos") {
+  
+  # Ensure input matrix is treated as a data frame
+  metabo_data <- as.data.frame(metabo_data)
+  
+  # Step 1: Filter metabolites meeting normality and equal variance assumptions
+  Norm <- metabo_norm_var %>%
+    filter(Norm_p.value > 0.05 & Var_p.value > 0.05)
+  
+  # Step 2: Subset metabolites that meet assumptions
+  metabo_anova <- metabo_data %>%
+    select(all_of(Norm$Code))
+  
+  # Step 3: Perform one-way ANOVA for each metabolite
+  anova_results <- lapply(metabo_anova, function(x) {
+    model <- aov(x ~ Group, data = metadata)
+    aov_result <- summary(model)
+    p_value <- aov_result[[1]]$`Pr(>F)`[1]
+    
+    # Return model details only if significant (p < 0.05)
+    if (!is.na(p_value) && p_value < 0.05) {
+      return(list(Model = model, ANOVA = aov_result, P_Value = p_value))
+    } else {
+      return(NULL)
+    }
+  })
+  
+  # Step 4: Filter significant results
+  anova_results <- Filter(Negate(is.null), anova_results)
+  
+  # Step 5: Convert list to data frame
+  anova_df <- do.call(rbind, lapply(names(anova_results), function(Metabolites) {
+    result <- anova_results[[Metabolites]]
+    if (!is.null(result)) {
+      df <- data.frame(
+        Code = Metabolites,
+        P_Value = result$P_Value,
+        stringsAsFactors = FALSE
+      )
+      return(df)
+    }
+  }))
+
+# Step 6: Merge with metabolite names from `Norm`
+  anova_df_descp <- anova_df %>%
+    left_join(Norm, by = "Code") %>%
+    select(Code, Metabolite, P_Value)
+  
+  # Step 7: TukeyHSD test on significant ANOVA models
+  tukey_results <- lapply(anova_results, function(res) {
+    tukey_res <- TukeyHSD(res$Model, "Group")
+    
+    if (!is.null(tukey_res$Group) && nrow(tukey_res$Group) > 0) {
+      tukey_df <- data.frame(Comparison = rownames(tukey_res$Group),
+                             tukey_res$Group, stringsAsFactors = FALSE)
+      
+      # Adjust p-values using Benjamini-Hochberg
+      if ("p adj" %in% colnames(tukey_df)) {
+        tukey_df$BH_Adjusted_P <- p.adjust(tukey_df$`p adj`, method = "BH")
+      }
+      return(tukey_df)
+    } else {
+      return(NULL)
+    }
+  })
+  
+  # Step 8: Clean & flatten the Tukey results
+  tukey_results <- Filter(Negate(is.null), tukey_results)
+  tukey_df <- do.call(rbind, lapply(names(tukey_results), function(Metabolite) {
+    df <- tukey_results[[Metabolite]]
+    if (!is.null(df)) {
+      df$Code <- Metabolite
+      return(df)
+    }
+  }))
+  
+  # Step 10: Filter for statistically significant (adjusted) comparisons
+  sig_tukey_df <- tukey_df %>%
+    filter(p.adj < 0.05) %>%  
+    left_join(Norm, by = "Code") %>%  
+    select(-W, -Norm_p.value, -Var_p.value)  
+  
+
+  # Final output: return both ANOVA and Tukey tables
+  return(list(
+    anova_table = anova_df_descp,
+    tukey_table = sig_tukey_df
+  ))
+}
+
+
+# ---------------------------------------------------------------
+# Example Usage: Direct comparison - One-way ANOVA + TukeyHSD
+# ---------------------------------------------------------------
+neg_anova <- anova_metabo(neg_norm_var, log2_matrix_neg, Metadata_55, neg_descp, "neg")
+
+
+
+
+
+
+
+
+
+
+
+      
+
+
+
+  
