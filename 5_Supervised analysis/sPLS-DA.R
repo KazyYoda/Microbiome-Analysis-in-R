@@ -195,9 +195,9 @@ process_component <- function(comp_number) {
   group_by(Group, IonMode) %>%
   summarise(n_metabolites = n_distinct(Code), .groups = "drop")
 
-# Print message and summary
-message("🟢 Number of VIP > 1 metabolites by group and ion mode:")
-print(vip_summary)
+  # Print message and summary
+  message("🟢 Number of VIP > 1 metabolites by group and ion mode:")
+  print(vip_summary)
 
   # Bar plot
   plot_obj <- ggplot(vip_df, aes(x = reorder(Code, Loading), y = Loading, fill = Group)) +
