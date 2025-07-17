@@ -47,7 +47,7 @@ library(ggplot2)
 “c” or “s” for quantitative variables. If “s”, the variables are scaled to unit variance.
 “n” for categorical variables.
 “f” for frequencies (from a contingency tables).
-- MFA - Multiple Factor Analysis in R (https://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/116-mfa-multiple-factor-analysis-in-r-essentials/)
+- Reference: MFA - Multiple Factor Analysis in R (https://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/116-mfa-multiple-factor-analysis-in-r-essentials/)
 
 ## Step 3: Group Variable Contributions
 - Use `get_mfa_var()` to extract:
