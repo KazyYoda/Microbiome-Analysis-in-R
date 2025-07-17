@@ -91,7 +91,7 @@ library(ggplot2)
 | Group Contribution Barplots| Contributions of genus, pos/neg ions to each axis             |
 | Group Correlation Maps     | Variable group locations on MFA dimensions                    |
 | Individual Sample Biplots  | Sample clustering colored by group with ellipses              |
-| Top 50 Variable Contribution| Feature-wise contribution barplots for dimensions 1–4         |
+| Variable Contribution      | Feature-wise contribution barplots for dimensions 1–4         |
 | Variable Correlation Maps  | Quantitative feature correlations shown as vectors            |
 
 ---
