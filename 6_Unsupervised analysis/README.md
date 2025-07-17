@@ -26,81 +26,88 @@ library(ggplot2)
 ```
 
 
-# ⚙️ Workflow Summary
+
+# ⚙️ Workflow Summary: Multiple Factor Analysis (MFA)
 
 ## Step 1: Data Preparation
+- Load genus count table and filter genera with p < 0.05 from Kruskal-Wallis test.
+- Apply CLR transformation on filtered genus counts (with pseudocount +1).
+- Load pre-scaled metabolomics data (`metabo_scaled`) from prior sPLS-DA step.
+- Merge CLR-transformed genus data with metabolomics (positive + negative ion) and group metadata.
 
-- Load genus-level counts and filter to **55 metabolomics-matched samples**.
-- Add **pseudocount (+1)** to avoid log(0), then apply **CLR transformation** using `compositions::clr()`.
-- Load **pre-scaled metabolomics data (`metabo_scaled`)** from `sPLSDA.RData`.
+## Step 2: Perform MFA
+- Use `FactoMineR::MFA()` with group structure:
+  - Group: BMI Group (qualitative)
+  - Positive Ions (95 features)
+  - Negative Ions (38 features)
+  - Genus (26 features)
+- Configure group types (`n`, `c`, `c`, `c`) and exclude “Group” from active analysis (`num.group.sup = 1`).
+- Generate scree plot for eigenvalue inspection.
 
-## Step 2: Redundancy Analysis (RDA)
+## Step 3: Group Variable Contributions
+- Use `get_mfa_var()` to extract:
+  - Coordinates
+  - Cos² (representation quality)
+  - Contributions to each dimension
+- Visualize:
+  - Group contributions to Dimensions 1–2 and 3–4
+  - Barplots for group contributions to specific axes
 
-- **Fit the RDA model** using:
-  - **Response**: `metabo_scaled` (log-transformed + scaled)
-  - **Explanatory**: `Group` from metadata (BMI group)
-- **Evaluate**:
-  - Model summary and **adjusted R²**
-  - **Canonical coefficients**
-  - **Variance partitioning**: constrained vs. unconstrained
+## Step 4: Sample Projections (Individuals)
+- Use `fviz_mfa_ind()` to visualize sample projections colored by BMI group (N, OW, OB).
+- Add confidence ellipses per group.
+- Customize aesthetic: axis labels, legend, and spacing.
 
-## Step 3: Statistical Testing
+## Step 5: Quantitative Variable Analysis
+- Plot top 50 contributing variables across Dim 1–4 using `fviz_contrib()`.
+- Display correlation maps for variables on Dimensions 1–2 and 3–4.
+- Arrows reflect contribution strength and direction in feature space.
 
-- Run **permutation-based ANOVA** using `vegan::anova.cca()`:
-  - Overall model
-  - Individual constrained axes (e.g., RDA1, RDA2)
-  - Group term significance
-
-## Step 4: Visualization
-
-- Use custom `rda_plot()` function to:
-  - Plot **samples by BMI group**
-  - Plot **top contributing features** (metabolites/genus)
-  - **Arrow coloring by feature type**: `Genus`, `positive_ion`, `negative_ion`
-  - Supports:
-    - **Scaling 1**: Emphasizes sample distances
-    - **Scaling 2**: Emphasizes feature correlations
-  - Combine plots with `gridExtra::grid.arrange()`
-
----
-
-# 📊 Statistical Interpretation
-
-- RDA quantifies how much variance in the **multi-omics dataset** is explained by the **BMI group**.
-- **Permutation-based ANOVA** tests:
-  - Overall model significance
-  - Significance of RDA axes (e.g., RDA1, RDA2)
-  - **Group effect** (BMI categories: N, OW, OB)
-- **Adjusted R²** prevents overfitting and reflects true explanatory power.
+## Step 6: Dimension Descriptions
+- Use `dimdesc()` to describe the most contributing variables (features) to each dimension.
+- Helps interpret biological drivers of MFA axes.
 
 ---
 
-# 📈 Visualization Outputs
-
-### `rda_plot()` generates:
-
-- Sample points **colored by BMI group**
-- **Top features as arrows** (length reflects contribution)
-- Switchable Scaling:
-  - **Scaling 1**: Sample distances
-  - **Scaling 2**: Feature correlations
-
-### Arrow Color by Feature Type:
-
-| Feature        | Color       | Hex       |
-|----------------|-------------|-----------|
-| Genus          | Purple      | `#660099` |
-| Positive Ions  | Green       | `#228B22` |
-| Negative Ions  | Red         | `#e02b35` |
+## 📊 Statistical Interpretation
+- MFA integrates multiple datasets while preserving their structure and balance.
+- Dimension 1 & 2 capture the most shared variance across microbiota and metabolomics.
+- Group effects (e.g., BMI) are observed in projections.
+- Variable contributions highlight which genera/metabolites drive these differences.
+- Cos² and contribution scores guide selection of key features for follow-up.
 
 ---
 
-# 📤 Output Files
+## 📈 Visualization Outputs
 
-| Output Name               | Description                                                |
-|---------------------------|------------------------------------------------------------|
-| `rda_model`               | RDA model object containing fitted multivariate regression |
-| `rda_plot(scaling = 2)`   | Biplot emphasizing feature correlations                    |
-| `rda_plot(scaling = 1)`   | Biplot emphasizing sample distances                        |
-| `anova_results.txt` (opt) | Permutation-based ANOVA significance test results          |
-| `RDA1_vs_RDA2_biplot.png` | Exported `ggplot2` visualization of the RDA analysis       |
+| Plot Type                   | Description                                                   |
+|----------------------------|---------------------------------------------------------------|
+| Scree Plot                 | Eigenvalues showing variance explained by each dimension      |
+| Group Contribution Barplots| Contributions of genus, pos/neg ions to each axis             |
+| Group Correlation Maps     | Variable group locations on MFA dimensions                    |
+| Individual Sample Biplots  | Sample clustering colored by group with ellipses              |
+| Top 50 Variable Contribution| Feature-wise contribution barplots for dimensions 1–4         |
+| Variable Correlation Maps  | Quantitative feature correlations shown as vectors            |
+
+---
+
+## 📤 Output Files
+
+| Output Name           | Description                                                     |
+|-----------------------|-----------------------------------------------------------------|
+| `res.mfa`             | MFA result object containing scores and loadings                |
+| `fviz_mfa_ind()` plot | Sample projection on MFA space with group ellipses              |
+| `fviz_mfa_var()` plots| Variable contributions and group correlations                   |
+| `fviz_contrib()` plots| Top contributing features per dimension                         |
+| `dimdesc(res.mfa, axis)`| Lists significant variables for each MFA axis                  |
+
+---
+
+## 📝 Notes
+- Pseudocounts (+1) are used before CLR transformation to handle zeros.
+- Sample order is validated (`identical()`) to prevent alignment errors.
+- Feature colors can be customized based on data type:
+  - **Genus** = Purple `#660099`
+  - **Positive Ions** = Green `#228B22`
+  - **Negative Ions** = Red `#e02b35`
+- Be sure to load `sPLSDA.RData` to access `metabo_scaled` and `Metadata_55`.
