@@ -27,7 +27,13 @@ library(dplyr)
 library(gridExtra)
 
 # Load Data
-load("~/Documents/Obese_Microbiome/5.Metabolites/Metabolites.RData")
+load("~/Documents/Microbiome_Analysis_R/5.Metabolites/Metabolites.RData")
+metabo_descp <- read_excel("~/Documents/Microbiome_Analysis_R/4.Metabolites/metabo_descp.xlsx")
+
+
+
+
+
 
 
 
