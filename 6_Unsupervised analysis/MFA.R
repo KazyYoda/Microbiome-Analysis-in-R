@@ -8,7 +8,7 @@
 #   3. Perform MFA using the FactoMineR package
 #   4. Visualize sample projections on MFA dimensions (Dim 1 & 2)
 #   5. Extract and plot variable contributions by data group (microbiota vs. metabolites)
-#   6. Identify top contributing features and export their coordinates
+#   6. Identify contributing features and export their coordinates
 ################################################################################
 
 
