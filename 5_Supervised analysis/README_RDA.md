@@ -52,6 +52,26 @@ This section investigates how gut microbiota at the **genus level** and **metabo
 
 ---
 
+## 📘 Function Overview: `rda_plot()`
+
+This function visualizes RDA (Redundancy Analysis) results as a clean, annotated biplot. It highlights the top contributing features (species or metabolites), distinguishes between ion types and genera, and allows customization of arrow scaling based on the selected scaling mode.
+
+---
+
+### 🔧 Parameters
+
+| Argument      | Description                                                                 |
+|---------------|-----------------------------------------------------------------------------|
+| `rda_model`   | An RDA object created using the `rda()` function from the **vegan** package.|
+| `metadata`    | A data frame containing sample group information. Must include a `Group` column.|
+| `top_n`       | *(Default = 100)* Number of top features to display, based on arrow length. |
+| `scale_factor`| *(Default = 2)* Multiplier to adjust arrow lengths for clearer visualization.|
+| `scaling_n`   | *(Default = 2)* RDA scaling mode. Use `1` for distance-based, `2` for correlation-based. |
+
+---
+
+
+
 ## 📈 Visualization Outputs
 
 - `rda_plot()` produces informative biplots with:
