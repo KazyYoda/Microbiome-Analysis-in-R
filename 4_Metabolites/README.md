@@ -69,12 +69,38 @@ data <- data %>%
 
 ## 📊 Statistical Testing and Interpretation
 
-* This workflow does **not** perform hypothesis testing by default.
-* Optional: Integrate Kruskal-Wallis or Dunn’s post hoc test manually using `kruskal.test()` or `dunn.test()`.
 * Interpretation is based on magnitude and direction of log2FC:
 
-  * Positive = Upregulated
-  * Negative = Downregulated
+  * Positive = Upregulated (log2FC > 0)
+  * Negative = Downregulated (log2FC < 0)
+  * No change = ≈ 0
+
+* The analysis includes non-parametric and parametric tests to assess metabolite
+  differences between groups:
+> **Note**: Normality and homogeneity of variance should be assessed prior to performing statistical analysis.
+
+### 1. **Kruskal-Wallis Test**
+- A non-parametric method used to detect differences in median values across more than two groups.
+- Suitable when the data is not normally distributed or variances are unequal.
+- **Null hypothesis (H₀)**: All groups come from the same distribution.
+- **Decision Rule**: Reject H₀ if `p < 0.05`.
+
+### 2. **Dunn’s Post Hoc Test**
+- Conducted after a significant Kruskal-Wallis result.
+- Performs pairwise comparisons between groups.
+- Adjusted p-values are applied using methods like Bonferroni or Benjamini-Hochberg correction.
+
+### 3. **One-Way ANOVA**
+- A parametric method to compare mean differences across groups.
+- Assumes normally distributed data and equal variances (homoscedasticity).
+- **Null hypothesis (H₀)**: All group means are equal.
+- **Decision Rule**: Reject H₀ if `p < 0.05`.
+
+### 4. **Tukey’s HSD Test**
+- Post hoc analysis following a significant ANOVA result.
+- Identifies which specific groups differ from each other.
+
+> **Note**: Statistical significance results are not visualized by default. Users can extend the scripts to annotate plots with p-values or significance labels.
 
 ---
 
