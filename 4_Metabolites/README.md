@@ -100,8 +100,6 @@ data <- data %>%
 - Post hoc analysis following a significant ANOVA result.
 - Identifies which specific groups differ from each other.
 
-> **Note**: Statistical significance results are not visualized by default. Users can extend the scripts to annotate plots with p-values or significance labels.
-
 ---
 
 ## 📈 Visualization
