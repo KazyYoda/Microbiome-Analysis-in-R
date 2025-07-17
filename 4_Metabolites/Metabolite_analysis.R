@@ -101,7 +101,7 @@ neg_descp <- data.frame(
 
 # 133 metabolites
 metabo_descp <- rbind(pos_descp, neg_descp)
-
+Export(metabo_descp, "metabo_descp.xlsx")
 
 
 
