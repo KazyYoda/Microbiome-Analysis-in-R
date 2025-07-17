@@ -89,7 +89,6 @@ This script outlines a complete sPLS-DA pipeline in R for multivariate analysis 
 - **Score Plots**: Colored ellipses and group separation via `ggplot2`
 - **Loading Barplots**: VIP > 1 metabolites with group contribution
 - **AUROC Curves**: Evaluate model performance
-- **Loading Heatmaps (Optional)**: Top features per component
 
 ---
 
