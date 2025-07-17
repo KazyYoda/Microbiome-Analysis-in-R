@@ -64,13 +64,29 @@ genus_clr <- clr(Genus_55)
 #-------------------------------
 # 2. Redundancy Analysis (RDA)
 #-------------------------------
-#-- RDA with multi-omics as response
+
+#📍 ----- RDA on metabolites -----
 # •	✅ Response matrix: metabo_scaled
 # •	✅ Explanatory variable: Metadata$Group (BMI Group)
 
 # Define RDA model
 # ✅ metabo_scaled = log-transformed + scaled
 rda_model <- rda(metabo_scaled ~ Group, data = Metadata_55)
+
+
+#📍 ----- RDA with multi-omics as response -----
+# Associations between genus and metabolites across BMI groups
+# •	✅ Response matrix: both genus_clr and metabo_scaled
+# •	✅ Explanatory variable: Metadata$Group (e.g. BMI group)
+
+# Combine CLR-genus and scaled metabolites
+response_matrix <- cbind(genus_clr, metabo_scaled)
+
+# Define RDA model
+# ✅ genus_clr = clr-transformed 
+# ✅ metabo_scaled = log-transformed + scaled
+rda_model <- rda(response_matrix ~ Group, data = Metadata_55)
+
 
 # Model summary and adjusted R²
 summary(rda_model)
@@ -140,7 +156,7 @@ rda_plot <- function(rda_model, metadata, top_n = 100, scale_factor = 2, scaling
   species_df_scaled$ion_type <- case_when(
     grepl("^pos", rownames(species_df_scaled)) ~ "positive_ion",
     grepl("^neg", rownames(species_df_scaled)) ~ "negative_ion",
-    TRUE ~ "Genus"
+    TRUE ~ "Genus" # Default to "Genus" if it's neither pos nor neg
   )
   
   # Compute explained variance for axis labels
