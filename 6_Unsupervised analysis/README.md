@@ -43,6 +43,11 @@ library(ggplot2)
   - Genus (26 features)
 - Configure group types (`n`, `c`, `c`, `c`) and exclude “Group” from active analysis (`num.group.sup = 1`).
 - Generate scree plot for eigenvalue inspection.
+- type: the type of variables in each group. By default, all variables are quantitative and scaled to unit variance. Allowed values include:
+“c” or “s” for quantitative variables. If “s”, the variables are scaled to unit variance.
+“n” for categorical variables.
+“f” for frequencies (from a contingency tables).
+- MFA - Multiple Factor Analysis in R (https://www.sthda.com/english/articles/31-principal-component-methods-in-r-practical-guide/116-mfa-multiple-factor-analysis-in-r-essentials/)
 
 ## Step 3: Group Variable Contributions
 - Use `get_mfa_var()` to extract:
