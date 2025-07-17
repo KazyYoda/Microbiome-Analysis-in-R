@@ -86,6 +86,18 @@ negmetabo <- neg_metabo %>%
 rownames(negmetabo) <- Metadata_55$SampleID
 
 
+# Prepare metabolite description 
+pos_descp <- data.frame(
+  Code = colnames(posmetabo),
+  Metabolite = colnames(pos_metabo[c(-1, -2)])
+)
+
+neg_descp <- data.frame(
+  Code = colnames(negmetabo),
+  Metabolite = colnames(neg_metabo[c(-1, -2)])
+)
+
+
 
 
 # ============================
