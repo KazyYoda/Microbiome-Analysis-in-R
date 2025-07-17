@@ -211,9 +211,17 @@ process_component <- function(comp_number) {
   return(list(plot = plot_obj, vip_annotated = vip_annotated))
 }
 
+
+
+
+# ---------------------------------------------------------------
+# Example Usage: sPLS-DA outputs
+# ---------------------------------------------------------------
+
 # Generate for Component 1 & 2
 comp1_out <- process_component(1)
 comp2_out <- process_component(2)
+
 
 # Combine Plots
 grid.arrange(
