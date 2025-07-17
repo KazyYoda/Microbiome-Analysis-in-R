@@ -15,7 +15,7 @@
 
 
 # Set Working Directory
-setwd("~/Documents/Obese_Microbiome/6.sPLS-DA")
+setwd("~/Documents/Microbiome_Analysis_R/5.sPLS-DA")
 
 # Load Required Libraries
 library(readxl)
