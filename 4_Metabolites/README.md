@@ -46,7 +46,7 @@ data <- data %>%
   mutate(across(where(is.numeric), ~ replace_na(.x, 0) + 1))
 ```
 
-### Step 3: Summary 
+### Step 3: Data Summary 
 
 * Convert data to long format.
 * Calculate mean ± SD log2FC for each metabolite within each group.
