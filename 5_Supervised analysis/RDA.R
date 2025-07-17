@@ -148,7 +148,12 @@ rda_plot <- function(rda_model, metadata, top_n = 100, scale_factor = 2, scaling
   
   # Define color palettes
   group_colors <- c(N = "grey", OW = "#FFA500", OB = "darkred")
-  arrow_colors <- c("Genus" = "#660099", "negative_ion" = "#e02b35", "positive_ion" = "#228B22")
+  
+  if (scaling_n == 1) {
+    arrow_colors <- c("Genus" = "grey", "negative_ion" = "grey", "positive_ion" = "grey")
+  } else {
+    arrow_colors <- c("Genus" = "#660099", "negative_ion" = "#e02b35", "positive_ion" = "#228B22")
+  }
   
   # Create the biplot
   p <- ggplot() +
@@ -173,19 +178,20 @@ rda_plot <- function(rda_model, metadata, top_n = 100, scale_factor = 2, scaling
   return(p)
 }
 
+
 # ---------------------------------------------------------------
 # Example Usage: RDA plot
 # ---------------------------------------------------------------
 rda_plot(rda_model = rda_model, metadata = Metadata_55, top_n = 100, 
          scale_factor = 2, scaling_n = 2)
 
+rda_plot(rda_model = rda_model, metadata = Metadata_55, top_n = 100, 
+         scale_factor = 2, scaling_n = 1)
 
-
-
-
-
-
-
-
-
-
+# Multiple plots
+library(gridExtra)
+grid.arrange(
+  sc1, 
+  sc2, 
+  layout_matrix = cbind(c(1, 2))
+)
