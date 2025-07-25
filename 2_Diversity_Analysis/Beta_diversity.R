@@ -178,10 +178,12 @@ plot_betadisper <- function(dist, grouping, method, sqrt = FALSE) {
                                   "3MC" = "gray20", "3MT" = "darkorange2"))+
     theme_bw() +
     theme(panel.grid = element_blank(),
-      legend.position = "right")
+          plot.title = element_text(size = 9),
+          legend.position = "right")
   
   return(p)
 }
+
 
 
 # Unweighted UniFrac 
