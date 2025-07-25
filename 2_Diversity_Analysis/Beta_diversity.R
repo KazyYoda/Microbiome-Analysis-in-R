@@ -155,16 +155,16 @@ run_permanova(bray_curtis, "Bray-Curtis", grouping)
 
 # Function
 plot_betadisper <- function(dist, grouping, method, sqrt = FALSE) {
-
+  
   # Perform Beta-Dispersion (betadisper)
   disp <- betadisper(dist, grouping, sqrt.dist = sqrt)
-
+  
   # Set seed for reproducibility
   set.seed(123)
-
+  
   # Perform statistical test for dispersion
   print(permutest(disp, permutations = 999))
-
+  
   # Visualization
   df <- data.frame(Group = disp$group, 
                    Distance = disp$distances)
@@ -173,9 +173,13 @@ plot_betadisper <- function(dist, grouping, method, sqrt = FALSE) {
     geom_boxplot() +
     labs(title = paste("Beta Dispersion -", method),
          y = "Distance to centroid") +
-    scale_fill_manual(values = c("N" = "grey", "OW" = "#FFA500", "OB" = "darkred")) +
+    scale_fill_manual(name = "Group",
+                       values = c("0MC" = "grey", "0MT" = "darkgoldenrod1", 
+                                  "3MC" = "gray20", "3MT" = "darkorange2"))+
     theme_bw() +
-    theme(legend.position = "none")
+    theme(panel.grid = element_blank(),
+      legend.position = "right")
+  
   return(p)
 }
 
