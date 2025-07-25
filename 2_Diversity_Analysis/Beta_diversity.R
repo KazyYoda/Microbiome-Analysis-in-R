@@ -154,7 +154,7 @@ run_permanova(bray_curtis, "Bray-Curtis", grouping)
 # -----------------------------------
 
 # Function
-plot_betadisper <- function(dist, method, sqrt = FALSE) {
+plot_betadisper <- function(dist, grouping, method, sqrt = FALSE) {
 
   # Perform Beta-Dispersion (betadisper)
   disp <- betadisper(dist, grouping, sqrt.dist = sqrt)
