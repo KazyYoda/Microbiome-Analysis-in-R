@@ -163,7 +163,30 @@ rank_names(ps)
 
 
 # ------------------------------
-# 6. Explore Phyloseq Object
+# 6. Rarefying
+# ------------------------------
+
+# Check for rarefaction:
+library_sizes <- sample_sums(ps)
+summary(library_sizes)
+
+# Rarefying
+ps_rare <- rarefy_even_depth(
+  ps,
+  sample.size = min(sample_sums(ps)),  # min sequencing depth
+  rngseed = 123,                       # correct argument for reproducibility
+  replace = FALSE,                    # sampling without replacement
+  verbose = TRUE
+)
+
+# Confirm that all samples now have the same depth:
+summary(sample_sums(ps_rare))
+
+
+
+
+# ------------------------------
+# 7. Explore Phyloseq Object
 # ------------------------------
 
 # Basic inspection
@@ -179,13 +202,12 @@ table(is.na(tax_table(ps)))
 
 
 
-
 # ------------------------------
-# 7. Summarize Taxonomy Table
+# 8. Summarize Taxonomy Table
 # ------------------------------
 
 # Convert taxonomy table to data frame
-taxa_df <- as.data.frame(tax_table(ps))
+taxa_df <- as.data.frame(tax_table(ps_rare))
 
 # Count unique taxa at each rank
 summary_table <- data.frame(
@@ -200,7 +222,7 @@ print(summary_table)
   
 
 # ------------------------------
-# 8. Export Taxonomy Tables
+# 9. Export Taxonomy Tables
 # ------------------------------
 
 # Add ASV ID to taxonomy
