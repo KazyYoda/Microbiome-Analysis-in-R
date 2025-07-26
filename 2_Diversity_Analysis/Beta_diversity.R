@@ -30,13 +30,13 @@ library(gridExtra)
 # ------------------------------
 # 2. Prepare Phyloseq Components
 # ------------------------------
-otu_table <- otu_table(ps)
-tax_table <- tax_table(ps)
-sample_data <- sample_data(ps)
+otu_table <- otu_table(ps_rare)
+tax_table <- tax_table(ps_rare)
+sample_data <- sample_data(ps_rare)
 
 
 sample_data$Group <- factor(sample_data$Group, levels = c("N", "OW", "OB"))
-tree <- phy_tree(ps)
+tree <- phy_tree(ps_rare)
 
 
 # Optional tree quality check
@@ -49,9 +49,9 @@ is.binary(tree)  # UniFrac assumes binary trees ((meaning some nodes have more t
 # ------------------------------
 # 3. Compute Beta Diversity Distances
 # ------------------------------
-unw_unifrac <- distance(ps, method = "unifrac", weighted = FALSE)
-w_unifrac <- distance(ps, method = "unifrac", weighted = TRUE)
-bray_curtis <- distance(otu_table, method = "bray")
+unw_unifrac <- distance(ps_rare, method = "unifrac", weighted = FALSE)
+w_unifrac <- distance(ps_rare, method = "unifrac", weighted = TRUE)
+bray_curtis <- distance(ps_rare, method = "bray")
 
 
 
@@ -59,9 +59,9 @@ bray_curtis <- distance(otu_table, method = "bray")
 # ------------------------------
 # 4. PCoA Ordination
 # ------------------------------
-unw_pcoa   <- ordinate(ps, method = "PCoA", distance = unw_unifrac)
-w_pcoa     <- ordinate(ps, method = "PCoA", distance = w_unifrac)
-bray_pcoa  <- ordinate(ps, method = "PCoA", distance = bray_curtis)
+unw_pcoa   <- ordinate(ps_rare, method = "PCoA", distance = unw_unifrac)
+w_pcoa     <- ordinate(ps_rare, method = "PCoA", distance = w_unifrac)
+bray_pcoa  <- ordinate(ps_rare, method = "PCoA", distance = bray_curtis)
 
 
 
@@ -71,8 +71,8 @@ bray_pcoa  <- ordinate(ps, method = "PCoA", distance = bray_curtis)
 # ------------------------------
 
 # Function
-plot_pcoa <- function(ord, ps, method_name, dist_name) {
-  plot_ordination(ps, ord, color = "Group") +
+plot_pcoa <- function(ord, ps_rare, method_name, dist_name) {
+  plot_ordination(ps_rare, ord, color = "Group") +
     geom_point(size = 3) +
     stat_ellipse(aes(color = Group), level = 0.95) +
     scale_color_manual(values = c("N" = "grey", "OW" = "#FFA500", "OB" = "darkred")) +
@@ -88,15 +88,15 @@ plot_pcoa <- function(ord, ps, method_name, dist_name) {
 }
 
 # Unweighted UniFrac plot
-p1 <- plot_pcoa(unw_pcoa, ps, "PCoA", "Unweighted UniFrac")
+p1 <- plot_pcoa(unw_pcoa, ps_rare, "PCoA", "Unweighted UniFrac")
 p1
 
 # Weighted UniFrac plot
-p2 <- plot_pcoa(w_pcoa, ps, "PCoA", "Weighted UniFrac")
+p2 <- plot_pcoa(w_pcoa, ps_rare, "PCoA", "Weighted UniFrac")
 p2
 
 # Bray-Curtis plot
-p3 <- plot_pcoa(bray_pcoa, ps, "PCoA", "Bray-Curtis")
+p3 <- plot_pcoa(bray_pcoa, ps_rare, "PCoA", "Bray-Curtis")
 p3
 
 
@@ -105,14 +105,6 @@ p3
 # ---------------------------------------
 # 6. Run PERMANOVA + pairwise PERMANOVA
 # ---------------------------------------
-# Extract the grouping variable directly
-grouping <- factor(sample_data(ps)$Group,
-                   levels = c("N", "OW", "OB"))
-
-
-# -------------------------------------
-# Run PERMANOVA and Pairwise PERMANOVA
-# -------------------------------------
 
 # Function
 run_permanova <- function(dist_matrix, name, group_vector) {
@@ -153,6 +145,11 @@ run_permanova(bray_curtis, "Bray-Curtis", grouping)
 # 7. Beta Dispersion & Visualization
 # -----------------------------------
 
+# Extract the grouping variable directly
+grouping <- factor(sample_data(ps_rare)$Group,
+                   levels = c("N", "OW", "OB"))
+
+
 # Function
 plot_betadisper <- function(dist, grouping, method, sqrt = FALSE) {
   
@@ -173,9 +170,7 @@ plot_betadisper <- function(dist, grouping, method, sqrt = FALSE) {
     geom_boxplot() +
     labs(title = paste("Beta Dispersion -", method),
          y = "Distance to centroid") +
-    scale_fill_manual(name = "Group",
-                       values = c("0MC" = "grey", "0MT" = "darkgoldenrod1", 
-                                  "3MC" = "gray20", "3MT" = "darkorange2"))+
+    scale_fill_manual(values = c("N" = "grey", "OW" = "#FFA500", "OB" = "darkred"))+
     theme_bw() +
     theme(panel.grid = element_blank(),
           plot.title = element_text(size = 9),
@@ -187,10 +182,10 @@ plot_betadisper <- function(dist, grouping, method, sqrt = FALSE) {
 
 
 # Unweighted UniFrac 
-d1 <- plot_betadisper(unw_unifrac, "Unweighted UniFrac")
+d1 <- plot_betadisper(unw_unifrac, grouping, "Unweighted UniFrac")
 
 # Weighted UniFrac
-d2 <- plot_betadisper(w_unifrac, "Weighted UniFrac", sqrt = TRUE)
+d2 <- plot_betadisper(w_unifrac, grouping, "Weighted UniFrac", sqrt = TRUE)
 
 # sqrt transformation for UniFrac distance matrix that is non-Euclidean (some eigenvalues become negative)
 # sqrt.dist = TRUE: applies a square root transformation to the distance matrix inside the betadisper() function
@@ -198,7 +193,7 @@ d2 <- plot_betadisper(w_unifrac, "Weighted UniFrac", sqrt = TRUE)
 
 
 # Bray-Curtis plot
-d3 <- plot_betadisper(bray_curtis, "Bray-Curtis")
+d3 <- plot_betadisper(bray_curtis, grouping, "Bray-Curtis")
 
 
 
