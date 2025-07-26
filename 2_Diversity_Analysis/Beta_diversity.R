@@ -106,6 +106,11 @@ p3
 # 6. Run PERMANOVA + pairwise PERMANOVA
 # ---------------------------------------
 
+# Extract the grouping variable directly
+grouping <- factor(sample_data(ps_rare)$Group,
+                   levels = c("N", "OW", "OB"))
+
+
 # Function
 run_permanova <- function(dist_matrix, name, group_vector) {
   cat("\n=======================================\n")
@@ -144,11 +149,6 @@ run_permanova(bray_curtis, "Bray-Curtis", grouping)
 # -----------------------------------
 # 7. Beta Dispersion & Visualization
 # -----------------------------------
-
-# Extract the grouping variable directly
-grouping <- factor(sample_data(ps_rare)$Group,
-                   levels = c("N", "OW", "OB"))
-
 
 # Function
 plot_betadisper <- function(dist, grouping, method, sqrt = FALSE) {
