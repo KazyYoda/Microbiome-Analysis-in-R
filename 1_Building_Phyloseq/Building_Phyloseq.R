@@ -162,9 +162,9 @@ rank_names(ps)
 
 
 
-# ------------------------------
-# 6. Rarefying
-# ------------------------------
+# -----------------------------------------
+# 6. Rarefying for determining diversity
+# ----------------------------------------
 
 # Check for rarefaction:
 library_sizes <- sample_sums(ps)
@@ -207,7 +207,7 @@ table(is.na(tax_table(ps_rare)))
 # ------------------------------
 
 # Convert taxonomy table to data frame
-taxa_df <- as.data.frame(tax_table(ps_rare))
+taxa_df <- as.data.frame(tax_table(ps))
 
 # Count unique taxa at each rank
 summary_table <- data.frame(
@@ -232,7 +232,7 @@ taxa_df_asv <- data.frame(ASV_ID = rownames(taxa_df), taxa_df)
 taxa_rank_asv <- data.frame(
   ASV_ID = rownames(taxa_df),
   taxa_df,
-  as.data.frame(otu_table(ps_rare))
+  as.data.frame(otu_table(ps))
 )
 
 # Export as Excel files;  You can rename the files by changing the string ("taxa_df_asv.xlsx" → "your_custom_filename.xlsx")
