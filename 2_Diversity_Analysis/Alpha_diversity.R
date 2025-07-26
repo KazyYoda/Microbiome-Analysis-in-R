@@ -36,7 +36,7 @@ library(dplyr)
 # ------------------------------
 
 # Standard metrics: Observed, Shannon, Chao1
-alpha_div <- estimate_richness(ps, measures = c("Observed", "Shannon", "Chao1"))
+alpha_div <- estimate_richness(ps_rare, measures = c("Observed", "Shannon", "Chao1"))
 head(alpha_div)
 
 # Extract metadata
@@ -58,8 +58,8 @@ library(picante)
 
 
 # Extract OTU table and tree from phyloseq
-otu <- as(otu_table(ps), "matrix")
-tree <- phy_tree(ps)
+otu <- as(otu_table(ps_rare), "matrix")
+tree <- phy_tree(ps_rare)
 tree$tip.label <- as.character(tree$tip.label)
 
 
