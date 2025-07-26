@@ -108,9 +108,9 @@ p3
 
 # Function
 run_permanova <- function(dist_matrix, name, group_vector) {
-  cat(paste0("\n=======================================\n"))
+  cat("\n=======================================\n")
   cat(paste0(" PERMANOVA Results: ", name, "\n"))
-  cat(paste0("=======================================\n"))
+  cat("=======================================\n")
 
   # Set seed for reproducibility
   set.seed(123)
