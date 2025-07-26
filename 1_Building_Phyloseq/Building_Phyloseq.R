@@ -190,15 +190,15 @@ summary(sample_sums(ps_rare))
 # ------------------------------
 
 # Basic inspection
-sample_names(ps)[1:5]
-tax_table(ps)[1:5, ]
-otu_table(ps)[1:5, ]
-rank_names(ps)
-sample_variables(ps)
-summary(sample_sums(ps))
+sample_names(ps_rare)[1:5]
+tax_table(ps_rare)[1:5, ]
+otu_table(ps_rare)[1:5, ]
+rank_names(ps_rare)
+sample_variables(ps_rare)
+summary(sample_sums(ps_rare))
 
 # Check for missing taxonomy
-table(is.na(tax_table(ps)))
+table(is.na(tax_table(ps_rare)))
 
 
 
@@ -232,7 +232,7 @@ taxa_df_asv <- data.frame(ASV_ID = rownames(taxa_df), taxa_df)
 taxa_rank_asv <- data.frame(
   ASV_ID = rownames(taxa_df),
   taxa_df,
-  as.data.frame(otu_table(ps))
+  as.data.frame(otu_table(ps_rare))
 )
 
 # Export as Excel files;  You can rename the files by changing the string ("taxa_df_asv.xlsx" → "your_custom_filename.xlsx")
